@@ -8,10 +8,13 @@ const migration2 = readFileSync('supabase/migrations/202609120002_harden_ballots
 const migration3 = readFileSync('supabase/migrations/202609130001_name_password_accounts.sql', 'utf8')
 const migration4 = readFileSync('supabase/migrations/202609130002_demo_cards_and_submission_rules.sql', 'utf8')
 
-test('React app connects voting, name-password auth, submission and storage', () => {
+test('React app connects passwordless name-team entry, voting, submission and storage', () => {
   assert.match(app, /signInWithPassword/)
   assert.match(app, /manycore_name_password/)
   assert.match(app, /accountEmail/)
+  assert.match(app, /accountCredential/)
+  assert.doesNotMatch(app, /type="password"/)
+  assert.match(app, /placeholder="组名"/)
   assert.match(app, /rpc\('submit_ballot'/)
   assert.match(app, /rpc\('get_leaderboard'/)
   assert.match(app, /storage\.from\('project-assets'\)/)

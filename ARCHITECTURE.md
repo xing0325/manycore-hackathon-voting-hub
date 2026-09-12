@@ -16,7 +16,7 @@
 - `public.projects`：作品和链接
 - `public.votes`：三票制选票，唯一约束 `(voter_id, project_id)`、`(voter_id, rank)`
 - `public.participants`：本名唯一（`normalized_name`）
-- Supabase Auth：本名 + 密码；本名转换为内部邮箱标识，不向用户展示
+- Supabase Auth：第一屏本名 + 组名，无密码输入；本名转换为内部邮箱标识，不向用户展示
 - Supabase Storage：`project-assets`，封面和 PDF/PPT/PPTX
 - `submit_ballot(uuid[])`：登录后原子提交三个不同作品，重复提交拒绝
 - `get_leaderboard()`：公开读取已发布作品及票数

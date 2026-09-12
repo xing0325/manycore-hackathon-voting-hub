@@ -34,11 +34,16 @@ function accountEmail(name) {
   return `u-${hex}@manycore.vote`
 }
 
+async function accountCredential(name, teamName) {
+  const value = `${normalizeName(name)}::${normalizeName(teamName)}::manycore-identity-v2`
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value))
+  const hex = Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, '0')).join('')
+  return `mc-${hex}-A9!`
+}
+
 function AuthPanel({ session, onToast }) {
   const [name, setName] = useState('')
   const [teamName, setTeamName] = useState('')
-  const [password, setPassword] = useState('')
-  const [mode, setMode] = useState('login')
   const [busy, setBusy] = useState(false)
 
   async function submitAccount(event) {
@@ -47,45 +52,40 @@ function AuthPanel({ session, onToast }) {
     const cleanTeamName = teamName.trim().replace(/\s+/g, ' ')
     if (!supabase || cleanName.length < 2) return onToast('请输入至少 2 个字符的本名')
     if (cleanTeamName.length < 2) return onToast('请输入至少 2 个字符的组名')
-    if (password.length < 6) return onToast('密码至少需要 6 位')
     setBusy(true)
     const email = accountEmail(cleanName)
-
-    if (mode === 'register') {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: { data: { display_name: cleanName, team_name: cleanTeamName, normalized_name: normalizeName(cleanName), normalized_team_name: normalizeName(cleanTeamName), account_kind: 'manycore_name_password' } },
-      })
-      if (error) {
-        setBusy(false)
-        return onToast(error.message.includes('already') ? '这个本名已经注册' : error.message)
-      }
-      if (data.user?.identities?.length === 0) {
-        const { error: loginError } = await supabase.auth.signInWithPassword({ email, password })
-        setBusy(false)
-        return onToast(loginError ? '这个本名已经注册，请使用原密码登录' : '账号已存在，已为你登录')
-      }
-      if (!data.session) {
-        const { error: loginError } = await supabase.auth.signInWithPassword({ email, password })
-        if (loginError) { setBusy(false); return onToast(loginError.message) }
-      }
-      setBusy(false)
-      onToast('注册成功，已自动登录')
-      return
-    }
-
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+    const credential = await accountCredential(cleanName, cleanTeamName)
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password: credential })
     if (!error) {
       const savedTeam = data.user?.user_metadata?.team_name || ''
       if (normalizeName(savedTeam) !== normalizeName(cleanTeamName)) {
         await supabase.auth.signOut()
         setBusy(false)
-        return onToast('本名、组名或密码不正确')
+        return onToast('本名或组名不正确')
       }
+      setBusy(false)
+      return onToast('登录成功')
+    }
+
+    const { data: created, error: signupError } = await supabase.auth.signUp({
+      email,
+      password: credential,
+      options: { data: { display_name: cleanName, team_name: cleanTeamName, normalized_name: normalizeName(cleanName), normalized_team_name: normalizeName(cleanTeamName), account_kind: 'manycore_name_password' } },
+    })
+    if (signupError) {
+      setBusy(false)
+      return onToast(signupError.message.includes('already') ? '这个本名已经注册，请使用原组名进入' : signupError.message)
+    }
+    if (created.user?.identities?.length === 0) {
+      setBusy(false)
+      return onToast('这个本名已经注册，请使用原组名进入')
+    }
+    if (!created.session) {
+      const { error: loginError } = await supabase.auth.signInWithPassword({ email, password: credential })
+      if (loginError) { setBusy(false); return onToast(loginError.message) }
     }
     setBusy(false)
-    onToast(error ? '本名、组名或密码不正确' : '登录成功')
+    onToast('已创建账号并进入系统')
   }
 
   if (session) {
@@ -102,9 +102,7 @@ function AuthPanel({ session, onToast }) {
     <form className="auth-form" onSubmit={submitAccount}>
       <input value={name} onChange={(e) => setName(e.target.value)} placeholder="本名" autoComplete="username" required />
       <input value={teamName} onChange={(e) => setTeamName(e.target.value)} placeholder="组名" autoComplete="organization" required />
-      <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="密码（至少 6 位）" autoComplete={mode === 'login' ? 'current-password' : 'new-password'} required />
-      <button className="button small" disabled={busy}>{busy ? '处理中…' : mode === 'login' ? '登录' : '注册'}</button>
-      <button className="auth-switch" type="button" onClick={() => setMode(mode === 'login' ? 'register' : 'login')}>{mode === 'login' ? '注册账号' : '返回登录'}</button>
+      <button className="button small" disabled={busy}>{busy ? '进入中…' : '进入系统'}</button>
     </form>
   )
 }
@@ -222,6 +220,11 @@ function Submission({ session, onSubmitted, onToast }) {
     if (!session) return onToast('请先登录，再提交作品')
     setBusy(true)
     const form = new FormData(event.currentTarget)
+    const teamName = String(form.get('team') || '').trim().replace(/\s+/g, ' ')
+    const { data: teamProjects, error: teamLookupError } = await supabase.from('projects').select('id, team_name, owner_id').not('owner_id', 'is', null)
+    if (teamLookupError) { setBusy(false); return onToast(teamLookupError.message) }
+    const sameTeam = (teamProjects || []).find((project) => project.id !== existing?.id && normalizeName(project.team_name) === normalizeName(teamName))
+    if (sameTeam) { setBusy(false); return onToast('这个组已经提交过作品，只能编辑原作品') }
     const stamp = Date.now()
     const root = `${session.user.id}/${stamp}`
     let coverUrl = ''
@@ -241,7 +244,7 @@ function Submission({ session, onSubmitted, onToast }) {
 
     const payload = {
       owner_id: session.user.id,
-      name: form.get('name'), team_name: form.get('team'), track: form.get('track') || '其他',
+      name: form.get('name'), team_name: teamName, track: form.get('track') || '其他',
       tagline: form.get('tagline'), description: form.get('description'),
       repo_url: form.get('repo_url') || null, video_url: form.get('video_url') || null,
       cover_url: coverUrl || existing?.cover_url || null, deck_url: deckUrl || existing?.deck_url || null,
@@ -259,7 +262,7 @@ function Submission({ session, onSubmitted, onToast }) {
   return (
     <section className="form-page">
       <div className="section-heading"><p className="eyebrow">SUBMIT PROJECT</p><h1>作品提交申报</h1><p className="limit-note">每个参赛组限提交 1 份作品。{existing ? '你正在编辑本组已提交的作品，不能新建第二份。' : '提交后如需修改，只能编辑自己之前的作品。'}</p><p>代码仓库和演示视频保存链接；封面与 PPT 上传至 Supabase Storage。</p></div>
-      {!session && <div className="notice">请先在页面顶部使用本名和密码登录。</div>}
+      {!session && <div className="notice">请先在页面顶部使用本名和组名进入系统。</div>}
       {session && loadingExisting && <div className="notice">正在检查本组已有作品…</div>}
       <form className="submission-form" key={existing?.id || 'new'} onSubmit={submit}>
         <div className="two"><label>作品名称 *<input name="name" defaultValue={existing?.name || ''} required /></label><label>团队名称 *<input name="team" defaultValue={existing?.team_name || session?.user?.user_metadata?.team_name || ''} required /></label></div>
@@ -293,7 +296,7 @@ function LoginGate({ onToast }) {
         <img src={`${base}assets/hosted-622882c9e1bd6021.png`} alt="ManyCore" />
         <p className="eyebrow">MANYCORE HACKATHON</p>
         <h1>先登录，再提交作品</h1>
-        <p>请输入姓名、组名和密码。每个本名只能创建一个账号；登录后默认进入作品提交页。</p>
+        <p>请输入姓名和组名。每个本名只能创建一个账号；登录后默认进入作品提交页。</p>
         <AuthPanel session={null} onToast={onToast} />
       </div>
     </section>
