@@ -7,7 +7,7 @@
 - 前端：Vite + React，GitHub Pages，`main` 分支 `/docs`
 - 线上地址：https://xing0325.github.io/manycore-hackathon-voting-hub/
 - Supabase 项目：`hkzxqhdopxfrbtmogdiz`（ap-northeast-1）
-- 当前部署提交：`e4e4359`（记录文件）
+- 当前部署提交：`4f165779`（GitHub Pages 已构建）
 
 ## 已完成
 
