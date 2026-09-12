@@ -42,6 +42,12 @@ input: first-screen login; submission form; gallery
 literal output/result: PASS login fields=name+team+password; default route=login; post-login route=submit; navigation=submit then gallery; leaderboard=removed; demo_cards=non-votable; one_project_per_team=database policy/index; required=name, team, GitHub URL, PPT; optional=cover, video; track=custom text + 其他 suggestion
 exit status: 0
 
+DEPLOYMENT
+command: git push origin main; GitHub Pages build status; curl live URL
+input: commit b335f7b
+literal output/result: push=success; Pages status=built; live title=ManyCore Hackathon · 作品展厅与投票
+exit status: 0
+
 PROJECT RECORD
 command: git push origin main; GitHub Pages build; curl live URL
 input: ARCHITECTURE.md
