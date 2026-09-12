@@ -1,42 +1,37 @@
 Project: ManyCore Hackathon Showcase & Voting Hub
 Changed branch: main
-Changed field: static Stitch index -> Vite + React app connected to Supabase Auth, Postgres, Storage, submit_ballot and get_leaderboard RPCs
+Changed field: Supabase Auth changed from email Magic Link to unique real-name + password registration/login
 MODIFIED_FILE: /Users/chichu/ai/codex-projects/群核/上传作品+投票网站/github-pages/src/main.jsx
 DIFF_FILE: /Users/chichu/ai/codex-projects/群核/上传作品+投票网站/github-pages/DIFF.patch
 VERIFICATION_FILE: /Users/chichu/ai/codex-projects/群核/上传作品+投票网站/github-pages/VERIFICATION.txt
 ROLLBACK_FILE: /Users/chichu/ai/codex-projects/群核/上传作品+投票网站/github-pages/ROLLBACK.sh
 
 BASELINE
-command: git show 0ea65a4074b10dd52d0b006e60fbb8944db22c74:index.html | grep -q 'window.toggleVote = function'
-input: baseline commit 0ea65a4074b10dd52d0b006e60fbb8944db22c74
-literal output/result: PASS baseline=static-stitch interaction=local-only
+command: git show 6e4accc150da67938a025d3293fbed56c41480b8:src/main.jsx | grep -q 'signInWithOtp'
+input: baseline commit 6e4accc150da67938a025d3293fbed56c41480b8
+literal output/result: PASS baseline_auth=email-magic-link
 exit status: 0
 
 MODIFIED
-command: npm test
+command: npm test && npm run build
 input: /Users/chichu/ai/codex-projects/群核/上传作品+投票网站/github-pages
 literal output/result: # tests 3; # pass 3; # fail 0
-literal output/result: PASS modified=vite-react backend=supabase auth=magic-link voting=atomic-three storage=project-assets leaderboard=live-rpc
+literal output/result: PASS build=name-password-auth unique-name-ui=true
 exit status: 0
 
-SUPABASE
-command: curl POST /rest/v1/rpc/get_leaderboard with publishable API key
-input: https://hkzxqhdopxfrbtmogdiz.supabase.co/rest/v1/rpc/get_leaderboard
-literal output/result: PASS supabase_rpc=get_leaderboard projects=4 vote_counts=0,0,0,0
-exit status: 0
-schema result: projects=4 votes=0 bucket=project-assets; RLS enabled on projects and votes; security advisors returned 0 lints.
-
-LIVE
-command: curl GitHub Pages HTML and JavaScript bundle, then verify embedded Supabase project URL
-input: https://xing0325.github.io/manycore-hackathon-voting-hub/
-literal output/result: HTTP/2 200; content-type: application/javascript; charset=utf-8
-literal output/result: PASS live=vite-react pages_source=/docs supabase_config=present https=true
+AUTH E2E
+command: Supabase Auth signup, password login, duplicate-name signup, then temporary-account cleanup
+input: display_name=系统测试甲 password=temporary-test-value
+literal output/result: signup_HTTP=200 session=true confirmed=true identities=1
+literal output/result: login_HTTP=200 session=true display_name=系统测试甲
+literal output/result: duplicate_HTTP=200 session=false identities=none
+literal output/result: participant_count=1; remaining_test_accounts=0
 exit status: 0
 
 ROLLBACK
-command: ./ROLLBACK.sh && git diff --quiet 0ea65a4074b10dd52d0b006e60fbb8944db22c74 -- index.html
-input: independent copy /Users/chichu/ai/codex-projects/群核/上传作品+投票网站/work/react-supabase-rollback-test.rDzIpZ
-literal output/result: PASS restored_behavior=static-Stitch-prototype restored_status=baseline-files
-literal output/result: PASS rollback_copy=restored index=baseline-match
+command: ./ROLLBACK.sh && git diff --quiet 6e4accc150da67938a025d3293fbed56c41480b8 -- src/main.jsx
+input: /Users/chichu/ai/codex-projects/群核/上传作品+投票网站/work/name-auth-rollback-test.SVaYuk
+literal output/result: PASS restored_behavior=email-magic-link-auth restored_status=previous-deployment
+literal output/result: PASS rollback_copy=restored auth=baseline-match
 exit status: 0
-restored behavior/status: the independent copy serves the original static Stitch prototype; the main repository remains on the React + Supabase implementation.
+restored behavior/status: independent copy restores the previous email Magic Link deployment; main remains changed to unique real-name + password authentication.

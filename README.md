@@ -5,12 +5,12 @@
 ## 技术栈
 
 - Vite + React
-- Supabase Auth：邮箱 Magic Link 登录
+- Supabase Auth：本名 + 密码登录，本名全局唯一
 - Supabase Postgres：作品、三票制选票、实时榜单
 - Supabase Storage：封面、PDF/PPT/PPTX
 - GitHub Pages：前端托管
 
-GitHub 仓库和演示视频只保存 URL，不上传视频文件。数据库与 Storage 均启用 RLS；每个登录账号只能原子提交一组三个不同作品的选票。
+GitHub 仓库和演示视频只保存 URL，不上传视频文件。数据库与 Storage 均启用 RLS；每个本名只能注册一次，每个登录账号只能原子提交一组三个不同作品的选票。
 
 ## 本地开发
 

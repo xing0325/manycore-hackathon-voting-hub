@@ -13,36 +13,75 @@ function Toast({ message }) {
   return message ? <div className="toast" role="status">{message}</div> : null
 }
 
+function normalizeName(value) {
+  return value.trim().replace(/\s+/g, ' ').toLocaleLowerCase('zh-CN')
+}
+
+function accountEmail(name) {
+  const bytes = new TextEncoder().encode(normalizeName(name))
+  const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('')
+  return `u-${hex}@manycore.vote`
+}
+
 function AuthPanel({ session, onToast }) {
-  const [email, setEmail] = useState('')
+  const [name, setName] = useState('')
+  const [password, setPassword] = useState('')
+  const [mode, setMode] = useState('login')
   const [busy, setBusy] = useState(false)
 
-  async function sendLink(event) {
+  async function submitAccount(event) {
     event.preventDefault()
-    if (!supabase || !email) return
+    const cleanName = name.trim().replace(/\s+/g, ' ')
+    if (!supabase || cleanName.length < 2) return onToast('请输入至少 2 个字符的本名')
+    if (password.length < 6) return onToast('密码至少需要 6 位')
     setBusy(true)
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: { emailRedirectTo: window.location.origin + base },
-    })
+    const email = accountEmail(cleanName)
+
+    if (mode === 'register') {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { display_name: cleanName, normalized_name: normalizeName(cleanName), account_kind: 'manycore_name_password' } },
+      })
+      if (error) {
+        setBusy(false)
+        return onToast(error.message.includes('already') ? '这个本名已经注册' : error.message)
+      }
+      if (data.user?.identities?.length === 0) {
+        const { error: loginError } = await supabase.auth.signInWithPassword({ email, password })
+        setBusy(false)
+        return onToast(loginError ? '这个本名已经注册，请使用原密码登录' : '账号已存在，已为你登录')
+      }
+      if (!data.session) {
+        const { error: loginError } = await supabase.auth.signInWithPassword({ email, password })
+        if (loginError) { setBusy(false); return onToast(loginError.message) }
+      }
+      setBusy(false)
+      onToast('注册成功，已自动登录')
+      return
+    }
+
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
     setBusy(false)
-    onToast(error ? error.message : '登录链接已发送，请查看邮箱')
+    onToast(error ? '本名或密码不正确' : '登录成功')
   }
 
   if (session) {
     return (
       <div className="account-chip">
         <span className="status-dot" />
-        <span>{session.user.email}</span>
+        <span>{session.user.user_metadata?.display_name || '参赛者'}</span>
         <button onClick={() => supabase.auth.signOut()}>退出</button>
       </div>
     )
   }
 
   return (
-    <form className="auth-form" onSubmit={sendLink}>
-      <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="邮箱登录" required />
-      <button className="button small" disabled={busy}>{busy ? '发送中…' : '发送登录链接'}</button>
+    <form className="auth-form" onSubmit={submitAccount}>
+      <input value={name} onChange={(e) => setName(e.target.value)} placeholder="本名" autoComplete="username" required />
+      <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="密码（至少 6 位）" autoComplete={mode === 'login' ? 'current-password' : 'new-password'} required />
+      <button className="button small" disabled={busy}>{busy ? '处理中…' : mode === 'login' ? '登录' : '注册'}</button>
+      <button className="auth-switch" type="button" onClick={() => setMode(mode === 'login' ? 'register' : 'login')}>{mode === 'login' ? '注册账号' : '返回登录'}</button>
     </form>
   )
 }
