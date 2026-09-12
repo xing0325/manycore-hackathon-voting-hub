@@ -4,8 +4,8 @@ Repository: https://github.com/xing0325/manycore-hackathon-voting-hub
 
 CHANGED_BRANCH_FIELD
 branch: main
-field: index.html <title> and meta description
-change: Stitch interactive prototype packaged as the GitHub Pages root while preserving index.original.html.
+field: index.html <title>, meta description, and hosted-image extensions
+change: Stitch interactive prototype packaged as the GitHub Pages root; local image references use .jpg/.png for GitHub Pages MIME correctness; index.original.html is preserved.
 
 FOUR_ARTIFACT_PATHS
 MODIFIED_FILE: /Users/chichu/ai/codex-projects/群核/上传作品+投票网站/github-pages/index.html
@@ -20,14 +20,15 @@ literal output/result: PASS source_interaction=present
 exit status: 0
 
 MODIFIED
-command: local HTTP route and interaction-hook validation
+command: local HTTP route, MIME, and interaction-hook validation
 input: http://127.0.0.1:4173/
-literal output/result: / HTTP=200 bytes=68558
-literal output/result: /assets/hosted-6274787d68edd039.img HTTP=200 bytes=58059
-literal output/result: /screens/leaderboard/ HTTP=200 bytes=22894
-literal output/result: /screens/submission/ HTTP=200 bytes=41939
-literal output/result: /screens/project-details/ HTTP=200 bytes=31664
-literal output/result: PASS local_site routes=5 voting_interaction=present final_submit=present
+literal output/result: / HTTP=200 bytes=68558 content_type=text/html
+literal output/result: /assets/hosted-6274787d68edd039.jpg HTTP=200 bytes=58059 content_type=image/jpeg
+literal output/result: /assets/hosted-622882c9e1bd6021.png HTTP=200 bytes=6603 content_type=image/png
+literal output/result: /screens/leaderboard/ HTTP=200 bytes=22894 content_type=text/html
+literal output/result: /screens/submission/ HTTP=200 bytes=41939 content_type=text/html
+literal output/result: /screens/project-details/ HTTP=200 bytes=31664 content_type=text/html
+literal output/result: PASS local_site routes=7 voting_interaction=present final_submit=present web_image_mime=present
 exit status: 0
 observable interaction: selecting RenderMesh Turbo and Coohom Copilot changed the count from 1/3 to 3/3 and enabled the final-submit confirmation modal.
 
