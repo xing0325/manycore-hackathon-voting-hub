@@ -35,3 +35,10 @@ literal output/result: PASS restored_behavior=email-magic-link-auth restored_sta
 literal output/result: PASS rollback_copy=restored auth=baseline-match
 exit status: 0
 restored behavior/status: independent copy restores the previous email Magic Link deployment; main remains changed to unique real-name + password authentication.
+
+PROJECT RECORD
+command: git push origin main; GitHub Pages build; curl live URL
+input: ARCHITECTURE.md
+literal output/result: commit=e8766fd then commit=5bca62f; Pages status=built; live page HTTP=200
+exit status: 0
+restored behavior/status: architecture, migration order, deployment URL, and recovery procedure are persisted in ARCHITECTURE.md and versioned in GitHub.
