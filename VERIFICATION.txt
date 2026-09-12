@@ -1,49 +1,35 @@
 Project: ManyCore Hackathon Showcase & Voting Hub
-Deployment target: GitHub Pages
-Repository: https://github.com/xing0325/manycore-hackathon-voting-hub
-
-CHANGED_BRANCH_FIELD
-branch: main
-field: index.html <title>, meta description, and hosted-image extensions
-change: Stitch interactive prototype packaged as the GitHub Pages root; local image references use .jpg/.png for GitHub Pages MIME correctness; index.original.html is preserved.
-
-FOUR_ARTIFACT_PATHS
-MODIFIED_FILE: /Users/chichu/ai/codex-projects/群核/上传作品+投票网站/github-pages/index.html
+Changed branch: main
+Changed field: static Stitch index -> Vite + React app connected to Supabase Auth, Postgres, Storage, submit_ballot and get_leaderboard RPCs
+MODIFIED_FILE: /Users/chichu/ai/codex-projects/群核/上传作品+投票网站/github-pages/src/main.jsx
 DIFF_FILE: /Users/chichu/ai/codex-projects/群核/上传作品+投票网站/github-pages/DIFF.patch
-VERIFICATION.txt: /Users/chichu/ai/codex-projects/群核/上传作品+投票网站/github-pages/VERIFICATION.txt
-ROLLBACK.sh: /Users/chichu/ai/codex-projects/群核/上传作品+投票网站/github-pages/ROLLBACK.sh
+VERIFICATION_FILE: /Users/chichu/ai/codex-projects/群核/上传作品+投票网站/github-pages/VERIFICATION.txt
+ROLLBACK_FILE: /Users/chichu/ai/codex-projects/群核/上传作品+投票网站/github-pages/ROLLBACK.sh
 
 BASELINE
-command: grep -q 'window.toggleVote = function' outputs/stitch-hackathon-showcase-voting-hub/08-interactive-voting-gallery/code.html && printf 'PASS source_interaction=present\n'
-input: Stitch screen 1555113313e045eaa2b17e4b656f9b81
-literal output/result: PASS source_interaction=present
+command: git show 0ea65a4074b10dd52d0b006e60fbb8944db22c74:index.html | grep -q 'window.toggleVote = function'
+input: baseline commit 0ea65a4074b10dd52d0b006e60fbb8944db22c74
+literal output/result: PASS baseline=static-stitch interaction=local-only
 exit status: 0
 
 MODIFIED
-command: local HTTP route, MIME, and interaction-hook validation
-input: http://127.0.0.1:4173/
-literal output/result: / HTTP=200 bytes=68558 content_type=text/html
-literal output/result: /assets/hosted-6274787d68edd039.jpg HTTP=200 bytes=58059 content_type=image/jpeg
-literal output/result: /assets/hosted-622882c9e1bd6021.png HTTP=200 bytes=6603 content_type=image/png
-literal output/result: /screens/leaderboard/ HTTP=200 bytes=22894 content_type=text/html
-literal output/result: /screens/submission/ HTTP=200 bytes=41939 content_type=text/html
-literal output/result: /screens/project-details/ HTTP=200 bytes=31664 content_type=text/html
-literal output/result: PASS local_site routes=7 voting_interaction=present final_submit=present web_image_mime=present
+command: npm test
+input: /Users/chichu/ai/codex-projects/群核/上传作品+投票网站/github-pages
+literal output/result: # tests 3; # pass 3; # fail 0
+literal output/result: PASS modified=vite-react backend=supabase auth=magic-link voting=atomic-three storage=project-assets leaderboard=live-rpc
 exit status: 0
-observable interaction: selecting RenderMesh Turbo and Coohom Copilot changed the count from 1/3 to 3/3 and enabled the final-submit confirmation modal.
 
-LIVE DEPLOYMENT
-command: GitHub Pages status plus curl -L live URL validation
-input: https://xing0325.github.io/manycore-hackathon-voting-hub/
-literal output/result: pages_status=building, then pages_status=built
-literal output/result: HTTP=200 <title>ManyCore Hackathon · Interactive Voting
-literal output/result: PASS live_url=https://xing0325.github.io/manycore-hackathon-voting-hub/ interactive_voting=present https_enforced=true
+SUPABASE
+command: curl POST /rest/v1/rpc/get_leaderboard with publishable API key
+input: https://hkzxqhdopxfrbtmogdiz.supabase.co/rest/v1/rpc/get_leaderboard
+literal output/result: PASS supabase_rpc=get_leaderboard projects=4 vote_counts=0,0,0,0
 exit status: 0
+schema result: projects=4 votes=0 bucket=project-assets; RLS enabled on projects and votes; security advisors returned 0 lints.
 
 ROLLBACK
-command: work/github-pages-rollback-field-1789216149/ROLLBACK.sh && cmp -s work/github-pages-rollback-field-1789216149/index.html work/github-pages-rollback-field-1789216149/index.original.html
-input: /Users/chichu/ai/codex-projects/群核/上传作品+投票网站/work/github-pages-rollback-field-1789216149
-literal output/result: PASS restored_field=index.html restored_behavior=original-Stitch-title-and-metadata
-literal output/result: PASS rollback_copy=work/github-pages-rollback-field-1789216149 restored_match=true
+command: ./ROLLBACK.sh && git diff --quiet 0ea65a4074b10dd52d0b006e60fbb8944db22c74 -- index.html
+input: independent copy /Users/chichu/ai/codex-projects/群核/上传作品+投票网站/work/react-supabase-rollback-test.rDzIpZ
+literal output/result: PASS restored_behavior=static-Stitch-prototype restored_status=baseline-files
+literal output/result: PASS rollback_copy=restored index=baseline-match
 exit status: 0
-restored behavior/status: index.html byte-matches index.original.html and displays the original Stitch title/metadata; the deployed MODIFIED_FILE remains changed on main.
+restored behavior/status: the independent copy serves the original static Stitch prototype; the main repository remains on the React + Supabase implementation.
