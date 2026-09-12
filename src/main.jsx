@@ -1,9 +1,20 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { isConfigured, supabase } from './supabase'
 import './styles.css'
 
 const base = import.meta.env.BASE_URL
+const demoCards = {
+  '11111111-1111-4111-8111-111111111111': ['示例卡片 · 作品怎么提交', '占位示例：队名、作品名、GitHub 和 PPT 都是必填项。', '这是教学用占位卡片，不代表真实参赛作品。每个参赛组限提交一份作品，提交后只能编辑自己的作品。'],
+  '22222222-2222-4222-8222-222222222222': ['示例卡片 · GitHub + PPT', '占位示例：仓库填 URL，PPT 上传到本平台。', '这是教学用占位卡片：GitHub 仓库必须填写，PPT 必须上传，视频链接可选。'],
+  '33333333-3333-4333-8333-333333333333': ['示例卡片 · 视频链接可选', '占位示例：演示视频可以留空，提交后仍可编辑。', '这是教学用占位卡片：赛道支持自定义，也可以填写“其他”。'],
+  '44444444-4444-4444-8444-444444444444': ['示例卡片 · 没有封面也可以', '占位示例：不上传封面时自动生成群核海报封面。', '这是教学用占位卡片：封面可选，缺少封面时系统会使用群核海报并叠加作品名。'],
+}
+
+function decorateProject(project) {
+  const demo = demoCards[project.id]
+  return demo ? { ...project, name: demo[0], tagline: demo[1], description: demo[2], cover_url: null, is_demo: true, vote_count: 0 } : project
+}
 
 function Icon({ children }) {
   return <span className="icon" aria-hidden="true">{children}</span>
@@ -25,6 +36,7 @@ function accountEmail(name) {
 
 function AuthPanel({ session, onToast }) {
   const [name, setName] = useState('')
+  const [teamName, setTeamName] = useState('')
   const [password, setPassword] = useState('')
   const [mode, setMode] = useState('login')
   const [busy, setBusy] = useState(false)
@@ -32,7 +44,9 @@ function AuthPanel({ session, onToast }) {
   async function submitAccount(event) {
     event.preventDefault()
     const cleanName = name.trim().replace(/\s+/g, ' ')
+    const cleanTeamName = teamName.trim().replace(/\s+/g, ' ')
     if (!supabase || cleanName.length < 2) return onToast('请输入至少 2 个字符的本名')
+    if (cleanTeamName.length < 2) return onToast('请输入至少 2 个字符的组名')
     if (password.length < 6) return onToast('密码至少需要 6 位')
     setBusy(true)
     const email = accountEmail(cleanName)
@@ -41,7 +55,7 @@ function AuthPanel({ session, onToast }) {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: { data: { display_name: cleanName, normalized_name: normalizeName(cleanName), account_kind: 'manycore_name_password' } },
+        options: { data: { display_name: cleanName, team_name: cleanTeamName, normalized_name: normalizeName(cleanName), normalized_team_name: normalizeName(cleanTeamName), account_kind: 'manycore_name_password' } },
       })
       if (error) {
         setBusy(false)
@@ -61,9 +75,17 @@ function AuthPanel({ session, onToast }) {
       return
     }
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+    if (!error) {
+      const savedTeam = data.user?.user_metadata?.team_name || ''
+      if (normalizeName(savedTeam) !== normalizeName(cleanTeamName)) {
+        await supabase.auth.signOut()
+        setBusy(false)
+        return onToast('本名、组名或密码不正确')
+      }
+    }
     setBusy(false)
-    onToast(error ? '本名或密码不正确' : '登录成功')
+    onToast(error ? '本名、组名或密码不正确' : '登录成功')
   }
 
   if (session) {
@@ -79,6 +101,7 @@ function AuthPanel({ session, onToast }) {
   return (
     <form className="auth-form" onSubmit={submitAccount}>
       <input value={name} onChange={(e) => setName(e.target.value)} placeholder="本名" autoComplete="username" required />
+      <input value={teamName} onChange={(e) => setTeamName(e.target.value)} placeholder="组名" autoComplete="organization" required />
       <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="密码（至少 6 位）" autoComplete={mode === 'login' ? 'current-password' : 'new-password'} required />
       <button className="button small" disabled={busy}>{busy ? '处理中…' : mode === 'login' ? '登录' : '注册'}</button>
       <button className="auth-switch" type="button" onClick={() => setMode(mode === 'login' ? 'register' : 'login')}>{mode === 'login' ? '注册账号' : '返回登录'}</button>
@@ -92,7 +115,7 @@ function ProjectModal({ project, onClose }) {
     <div className="modal-backdrop" onClick={onClose}>
       <article className="modal" onClick={(e) => e.stopPropagation()}>
         <button className="close" onClick={onClose}>×</button>
-        <img src={project.cover_url || `${base}assets/hosted-b752385f33d6181e.jpg`} alt="" />
+        {project.cover_url ? <img src={project.cover_url} alt="" /> : <div className="fallback-cover"><img src={`${base}assets/hosted-622882c9e1bd6021.png`} alt="" /><strong>{project.name}</strong></div>}
         <div className="modal-body">
           <span className="tag">{project.track}</span>
           <h2>{project.name}</h2>
@@ -120,6 +143,7 @@ function Gallery({ projects, session, selected, setSelected, submitVotes, loadin
   })
 
   function toggle(id) {
+    if (projects.find((project) => project.id === id)?.is_demo) return onToast('这是提交说明示例，不参与投票')
     if (selected.includes(id)) return setSelected(selected.filter((item) => item !== id))
     if (selected.length === 3) return onToast('每位观众最多选择 3 个作品')
     setSelected([...selected, id])
@@ -158,7 +182,7 @@ function Gallery({ projects, session, selected, setSelected, submitVotes, loadin
           return (
             <article className={chosen ? 'project-card selected' : 'project-card'} key={project.id}>
               <button className="cover" onClick={() => onOpen(project)}>
-                <img src={project.cover_url || `${base}assets/hosted-b752385f33d6181e.jpg`} alt={`${project.name} 封面`} />
+                {project.cover_url ? <img src={project.cover_url} alt={`${project.name} 封面`} /> : <div className="fallback-cover"><img src={`${base}assets/hosted-622882c9e1bd6021.png`} alt="" /><strong>{project.name}</strong></div>}
                 <span className="vote-count">▲ {project.vote_count || 0}</span>
               </button>
               <div className="card-body">
@@ -166,7 +190,7 @@ function Gallery({ projects, session, selected, setSelected, submitVotes, loadin
                 <h3 onClick={() => onOpen(project)}>{project.name}</h3>
                 <p>{project.tagline}</p>
                 <div className="card-actions">
-                  <button className={chosen ? 'vote chosen' : 'vote'} onClick={() => toggle(project.id)}>{chosen ? '✓ 已选择' : '+ 投一票'}</button>
+                  <button className={chosen ? 'vote chosen' : 'vote'} disabled={project.is_demo} onClick={() => toggle(project.id)}>{project.is_demo ? '教学示例 · 不参与投票' : chosen ? '✓ 已选择' : '+ 投一票'}</button>
                   <button className="ghost" onClick={() => onOpen(project)}>查看详情</button>
                 </div>
               </div>
@@ -174,12 +198,24 @@ function Gallery({ projects, session, selected, setSelected, submitVotes, loadin
           )
         })}
       </section>
+      {visible.length === 0 && <div className="notice">暂时没有作品。参赛组可以先到“提交作品”页面上传唯一作品。</div>}
     </>
   )
 }
 
 function Submission({ session, onSubmitted, onToast }) {
   const [busy, setBusy] = useState(false)
+  const [existing, setExisting] = useState(null)
+  const [loadingExisting, setLoadingExisting] = useState(Boolean(session))
+
+  useEffect(() => {
+    let active = true
+    if (!session || !supabase) { setExisting(null); setLoadingExisting(false); return () => { active = false } }
+    setLoadingExisting(true)
+    supabase.from('projects').select('*').eq('owner_id', session.user.id).order('created_at', { ascending: false }).limit(1).maybeSingle()
+      .then(({ data, error }) => { if (active) { if (error) onToast(error.message); setExisting(data || null); setLoadingExisting(false) } })
+    return () => { active = false }
+  }, [session, onToast])
 
   async function submit(event) {
     event.preventDefault()
@@ -192,6 +228,7 @@ function Submission({ session, onSubmitted, onToast }) {
     let deckUrl = ''
 
     for (const [field, file] of [['cover', form.get('cover')], ['deck', form.get('deck')]]) {
+      if (field === 'deck' && existing && (!(file instanceof File) || !file.size) && existing.deck_url) continue
       if (!(file instanceof File) || !file.size) continue
       const cleanName = file.name.replace(/[^a-zA-Z0-9._-]/g, '-')
       const path = `${root}/${field}-${cleanName}`
@@ -202,31 +239,35 @@ function Submission({ session, onSubmitted, onToast }) {
       if (field === 'deck') deckUrl = data.publicUrl
     }
 
-    const { error } = await supabase.from('projects').insert({
+    const payload = {
       owner_id: session.user.id,
-      name: form.get('name'), team_name: form.get('team'), track: form.get('track'),
+      name: form.get('name'), team_name: form.get('team'), track: form.get('track') || '其他',
       tagline: form.get('tagline'), description: form.get('description'),
       repo_url: form.get('repo_url') || null, video_url: form.get('video_url') || null,
-      cover_url: coverUrl || null, deck_url: deckUrl || null,
-    })
+      cover_url: coverUrl || existing?.cover_url || null, deck_url: deckUrl || existing?.deck_url || null,
+    }
+    const { error } = existing
+      ? await supabase.from('projects').update({ name: payload.name, team_name: payload.team_name, track: payload.track, tagline: payload.tagline, description: payload.description, repo_url: payload.repo_url, video_url: payload.video_url, cover_url: payload.cover_url, deck_url: payload.deck_url, updated_at: new Date().toISOString() }).eq('id', existing.id).eq('owner_id', session.user.id)
+      : await supabase.from('projects').insert(payload)
     setBusy(false)
     if (error) return onToast(error.message)
     event.currentTarget.reset()
-    onToast('作品提交成功，已进入展厅')
+    onToast(existing ? '作品已更新' : '作品提交成功，已进入展厅')
     onSubmitted()
   }
 
   return (
     <section className="form-page">
-      <div className="section-heading"><p className="eyebrow">SUBMIT PROJECT</p><h1>作品提交申报</h1><p>代码仓库和演示视频保存链接；封面与 PPT 上传至 Supabase Storage。</p></div>
-      {!session && <div className="notice">请先在页面顶部使用邮箱登录。</div>}
-      <form className="submission-form" onSubmit={submit}>
-        <div className="two"><label>作品名称<input name="name" required /></label><label>团队名称<input name="team" required /></label></div>
-        <div className="two"><label>赛道<select name="track"><option>空间智能</option><option>实时渲染</option><option>生成式 AI</option><option>开放创新</option></select></label><label>一句话亮点<input name="tagline" required /></label></div>
-        <label>项目介绍<textarea name="description" rows="6" required /></label>
-        <div className="two"><label>GitHub 仓库 URL<input name="repo_url" type="url" placeholder="https://github.com/…" /></label><label>演示视频 URL<input name="video_url" type="url" placeholder="B站 / YouTube / Drive" /></label></div>
-        <div className="two"><label className="upload">项目封面<input name="cover" type="file" accept="image/*" /><small>JPG / PNG / WebP</small></label><label className="upload">项目 PPT<input name="deck" type="file" accept=".pdf,.ppt,.pptx" /><small>PDF / PPT / PPTX</small></label></div>
-        <button className="button wide" disabled={!session || busy}>{busy ? '正在上传并提交…' : '提交作品'}</button>
+      <div className="section-heading"><p className="eyebrow">SUBMIT PROJECT</p><h1>作品提交申报</h1><p className="limit-note">每个参赛组限提交 1 份作品。{existing ? '你正在编辑本组已提交的作品，不能新建第二份。' : '提交后如需修改，只能编辑自己之前的作品。'}</p><p>代码仓库和演示视频保存链接；封面与 PPT 上传至 Supabase Storage。</p></div>
+      {!session && <div className="notice">请先在页面顶部使用本名和密码登录。</div>}
+      {session && loadingExisting && <div className="notice">正在检查本组已有作品…</div>}
+      <form className="submission-form" key={existing?.id || 'new'} onSubmit={submit}>
+        <div className="two"><label>作品名称 *<input name="name" defaultValue={existing?.name || ''} required /></label><label>团队名称 *<input name="team" defaultValue={existing?.team_name || session?.user?.user_metadata?.team_name || ''} required /></label></div>
+        <div className="two"><label>赛道（可自定义）<input name="track" list="track-options" defaultValue={existing?.track || ''} placeholder="填写赛道或选择常用项" /><datalist id="track-options"><option value="空间智能" /><option value="实时渲染" /><option value="生成式 AI" /><option value="其他" /></datalist></label><label>一句话亮点<input name="tagline" defaultValue={existing?.tagline || ''} required /></label></div>
+        <label>项目介绍<textarea name="description" rows="6" defaultValue={existing?.description || ''} required /></label>
+        <div className="two"><label>GitHub 仓库 URL *<input name="repo_url" type="url" defaultValue={existing?.repo_url || ''} placeholder="https://github.com/…" required /></label><label>演示视频 URL（可选）<input name="video_url" type="url" defaultValue={existing?.video_url || ''} placeholder="B站 / YouTube / Drive" /></label></div>
+        <div className="two"><label className="upload">项目封面（可选）<input name="cover" type="file" accept="image/*" /><small>不上传时自动使用群核海报 + 作品名称</small></label><label className="upload">项目 PPT *<input name="deck" type="file" accept=".pdf,.ppt,.pptx" required={!existing} /><small>{existing?.deck_url ? '已有 PPT；重新选择可替换' : 'PDF / PPT / PPTX，必填'}</small></label></div>
+        <button className="button wide" disabled={!session || busy || loadingExisting}>{busy ? '正在上传并保存…' : existing ? '保存我的作品修改' : '提交我的唯一作品'}</button>
       </form>
     </section>
   )
@@ -238,15 +279,29 @@ function Leaderboard({ projects }) {
     <section className="leaderboard-page">
       <div className="section-heading"><p className="eyebrow">LIVE RANKING</p><h1>全场人气实时榜单</h1><p>榜单自动读取 Supabase 中的有效选票。</p></div>
       <div className="podium">
-        {ranked.slice(0, 3).map((p, index) => <div className={`podium-card rank-${index + 1}`} key={p.id}><span>#{index + 1}</span><img src={p.cover_url || `${base}assets/hosted-b752385f33d6181e.jpg`} alt="" /><h3>{p.name}</h3><strong>{p.vote_count || 0} 票</strong></div>)}
+        {ranked.slice(0, 3).map((p, index) => <div className={`podium-card rank-${index + 1}`} key={p.id}><span>#{index + 1}</span>{p.cover_url ? <img src={p.cover_url} alt="" /> : <div className="fallback-cover"><img src={`${base}assets/hosted-622882c9e1bd6021.png`} alt="" /></div>}<h3>{p.name}</h3><strong>{p.vote_count || 0} 票</strong></div>)}
       </div>
       <div className="rank-list">{ranked.map((p, index) => <div className="rank-row" key={p.id}><b>{String(index + 1).padStart(2, '0')}</b><span>{p.name}<small>{p.team_name} · {p.track}</small></span><strong>{p.vote_count || 0}</strong></div>)}</div>
     </section>
   )
 }
 
+function LoginGate({ onToast }) {
+  return (
+    <section className="login-page">
+      <div className="login-card">
+        <img src={`${base}assets/hosted-622882c9e1bd6021.png`} alt="ManyCore" />
+        <p className="eyebrow">MANYCORE HACKATHON</p>
+        <h1>先登录，再提交作品</h1>
+        <p>请输入姓名、组名和密码。每个本名只能创建一个账号；登录后默认进入作品提交页。</p>
+        <AuthPanel session={null} onToast={onToast} />
+      </div>
+    </section>
+  )
+}
+
 function App() {
-  const [page, setPage] = useState('gallery')
+  const [page, setPage] = useState('submit')
   const [session, setSession] = useState(null)
   const [projects, setProjects] = useState([])
   const [selected, setSelected] = useState([])
@@ -264,7 +319,7 @@ function App() {
     if (!supabase) return
     const { data, error } = await supabase.rpc('get_leaderboard')
     if (error) toast(error.message)
-    else setProjects(data || [])
+    else setProjects((data || []).map(decorateProject))
     setLoading(false)
   }, [toast])
 
@@ -279,6 +334,7 @@ function App() {
 
   async function submitVotes() {
     if (!session) return toast('请先登录')
+    if (selected.some((id) => demoCards[id])) return toast('教学示例不参与投票，请选择真实参赛作品')
     setLoading(true)
     const { error } = await supabase.rpc('submit_ballot', { project_ids: selected })
     if (error) toast(error.message)
@@ -286,23 +342,19 @@ function App() {
     await loadProjects()
   }
 
-  const nav = useMemo(() => [
-    ['gallery', '◇', '作品展厅'], ['submit', '＋', '提交作品'], ['leaderboard', '▥', '实时榜单'],
-  ], [])
-
   return (
     <div className="app-shell">
-      <header>
+      {session && <header>
         <button className="brand" onClick={() => setPage('gallery')}><img src={`${base}assets/hosted-622882c9e1bd6021.png`} alt="ManyCore" /><span>ManyCore<br /><small>HACKATHON HUB</small></span></button>
         <AuthPanel session={session} onToast={toast} />
-      </header>
+      </header>}
       {!isConfigured && <div className="config-error">Supabase 环境变量尚未配置。</div>}
       <main>
-        {page === 'gallery' && <Gallery {...{ projects, session, selected, setSelected, submitVotes, loading, onOpen: setModal, onToast: toast }} />}
-        {page === 'submit' && <Submission session={session} onSubmitted={() => { loadProjects(); setPage('gallery') }} onToast={toast} />}
-        {page === 'leaderboard' && <Leaderboard projects={projects} />}
+        {!session && <LoginGate onToast={toast} />}
+        {session && page === 'gallery' && <Gallery {...{ projects, session, selected, setSelected, submitVotes, loading, onOpen: setModal, onToast: toast }} />}
+        {session && page === 'submit' && <Submission session={session} onSubmitted={() => { loadProjects(); setPage('submit') }} onToast={toast} />}
       </main>
-      <nav>{nav.map(([key, icon, label]) => <button className={page === key ? 'active' : ''} onClick={() => { setPage(key); window.scrollTo({ top: 0, behavior: 'smooth' }) }} key={key}><Icon>{icon}</Icon><span>{label}</span></button>)}</nav>
+      {session && <nav>{[['submit', '＋', '提交作品'], ['gallery', '◇', '作品展厅']].map(([key, icon, label]) => <button className={page === key ? 'active' : ''} onClick={() => { setPage(key); window.scrollTo({ top: 0, behavior: 'smooth' }) }} key={key}><Icon>{icon}</Icon><span>{label}</span></button>)}</nav>}
       <ProjectModal project={modal} onClose={() => setModal(null)} />
       <Toast message={message} />
     </div>

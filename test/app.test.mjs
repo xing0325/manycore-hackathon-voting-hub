@@ -6,6 +6,7 @@ const app = readFileSync('src/main.jsx', 'utf8')
 const migration1 = readFileSync('supabase/migrations/202609120001_hackathon_hub.sql', 'utf8')
 const migration2 = readFileSync('supabase/migrations/202609120002_harden_ballots_and_leaderboard.sql', 'utf8')
 const migration3 = readFileSync('supabase/migrations/202609130001_name_password_accounts.sql', 'utf8')
+const migration4 = readFileSync('supabase/migrations/202609130002_demo_cards_and_submission_rules.sql', 'utf8')
 
 test('React app connects voting, name-password auth, submission and storage', () => {
   assert.match(app, /signInWithPassword/)
@@ -24,6 +25,8 @@ test('database migrations enforce RLS and exactly three votes', () => {
   assert.match(migration2, /security invoker/)
   assert.match(migration3, /normalized_name text not null unique/)
   assert.match(migration3, /email_confirmed_at/)
+  assert.match(migration4, /is_demo boolean not null default false/)
+  assert.match(migration4, /not exists \(select 1 from public\.projects/)
 })
 
 test('GitHub Pages build is complete', () => {

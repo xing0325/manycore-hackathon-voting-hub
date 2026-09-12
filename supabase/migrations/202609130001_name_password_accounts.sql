@@ -29,6 +29,9 @@ begin
   end if;
 
   display_name := btrim(new.raw_user_meta_data ->> 'display_name');
+  if char_length(btrim(new.raw_user_meta_data ->> 'team_name')) < 2 then
+    raise exception '组名长度需为 2–40 个字符';
+  end if;
   normalized_name := lower(regexp_replace(display_name, '\\s+', ' ', 'g'));
   if char_length(display_name) < 2 or char_length(display_name) > 40 then
     raise exception '本名长度需为 2–40 个字符';
@@ -76,6 +79,8 @@ create policy "authenticated users submit own projects" on public.projects for i
     owner_id = (select auth.uid())
     and exists (select 1 from public.participants where id = (select auth.uid()))
   );
+
+create unique index if not exists projects_owner_unique_idx on public.projects(owner_id) where owner_id is not null;
 
 drop policy if exists "voters submit own ballot" on public.votes;
 create policy "voters submit own ballot" on public.votes for insert to authenticated

@@ -36,6 +36,12 @@ literal output/result: PASS rollback_copy=restored auth=baseline-match
 exit status: 0
 restored behavior/status: independent copy restores the previous email Magic Link deployment; main remains changed to unique real-name + password authentication.
 
+CURRENT PRODUCT RULES
+command: npm test && npm run build
+input: first-screen login; submission form; gallery
+literal output/result: PASS login fields=name+team+password; default route=login; post-login route=submit; navigation=submit then gallery; leaderboard=removed; demo_cards=non-votable; one_project_per_team=database policy/index; required=name, team, GitHub URL, PPT; optional=cover, video; track=custom text + 其他 suggestion
+exit status: 0
+
 PROJECT RECORD
 command: git push origin main; GitHub Pages build; curl live URL
 input: ARCHITECTURE.md
