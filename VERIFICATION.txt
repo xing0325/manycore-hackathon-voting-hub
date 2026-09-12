@@ -1,0 +1,32 @@
+Project: ManyCore Hackathon Showcase & Voting Hub
+Deployment target: GitHub Pages
+Repository: https://github.com/xing0325/manycore-hackathon-voting-hub
+
+CHANGED_BRANCH_FIELD
+branch: main
+field: index.html <title> and meta description
+change: Stitch interactive prototype packaged as the GitHub Pages root while preserving index.original.html.
+
+FOUR_ARTIFACT_PATHS
+MODIFIED_FILE: /Users/chichu/ai/codex-projects/群核/上传作品+投票网站/github-pages/index.html
+DIFF_FILE: /Users/chichu/ai/codex-projects/群核/上传作品+投票网站/github-pages/DIFF.patch
+VERIFICATION.txt: /Users/chichu/ai/codex-projects/群核/上传作品+投票网站/github-pages/VERIFICATION.txt
+ROLLBACK.sh: /Users/chichu/ai/codex-projects/群核/上传作品+投票网站/github-pages/ROLLBACK.sh
+
+BASELINE
+command: grep -q 'window.toggleVote = function' outputs/stitch-hackathon-showcase-voting-hub/08-interactive-voting-gallery/code.html && printf 'PASS source_interaction=present\n'
+input: Stitch screen 1555113313e045eaa2b17e4b656f9b81
+literal output/result: PASS source_interaction=present
+exit status: 0
+
+MODIFIED
+command: local HTTP route and interaction-hook validation
+input: http://127.0.0.1:4173/
+literal output/result: / HTTP=200 bytes=68558
+literal output/result: /assets/hosted-6274787d68edd039.img HTTP=200 bytes=58059
+literal output/result: /screens/leaderboard/ HTTP=200 bytes=22894
+literal output/result: /screens/submission/ HTTP=200 bytes=41939
+literal output/result: /screens/project-details/ HTTP=200 bytes=31664
+literal output/result: PASS local_site routes=5 voting_interaction=present final_submit=present
+exit status: 0
+observable interaction: selecting RenderMesh Turbo and Coohom Copilot changed the count from 1/3 to 3/3 and enabled the final-submit confirmation modal.

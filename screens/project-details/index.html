@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="zh-CN"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><title>ManyCore Hackathon</title><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:ital,wght@0,300..800;1,300..800&amp;family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&amp;family=Space+Grotesk:wght@300..700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: 'class', theme: { extend: { colors: { 'surface-container-high': '#282a2f', 'surface-elevated': '#161B22', 'on-tertiary-fixed-variant': '#005144', 'inverse-on-surface': '#2e3036', 'on-error': '#690005', 'tertiary-container': '#00816f', 'core-violet-light': '#C8B2FF', 'surface-container-lowest': '#0c0e13', 'tertiary-fixed-dim': '#00dfc1', 'error-container': '#93000a', 'on-primary-fixed': '#001849', 'text-muted': '#8B949E', 'on-primary-container': '#f8f7ff', 'surface-container': '#1e1f25', 'surface-variant': '#33353a', 'on-error-container': '#ffdad6', 'on-tertiary-fixed': '#00201a', 'viewport-cyan': '#00E5FF', 'surface-dark': '#0D1117', 'tertiary': '#00dfc1', 'primary': '#b3c5ff', 'on-secondary-fixed-variant': '#4914cb', 'on-background': '#e2e2e9', 'surface': '#111318', 'on-secondary-container': '#bdaeff', 'surface-tint': '#b3c5ff', 'on-tertiary-container': '#e1fff6', 'error': '#ffb4ab', 'on-primary-fixed-variant': '#003fa4', 'on-surface-variant': '#c2c6d8', 'signal-warning': '#FFB300', 'primary-fixed-dim': '#b3c5ff', 'outline-variant': '#424656', 'on-surface': '#e2e2e9', 'on-tertiary': '#00382f', 'on-primary': '#002b75', 'surface-dim': '#111318', 'on-secondary-fixed': '#1d0061', 'secondary': '#cbbeff', 'surface-bright': '#37393f', 'tertiary-fixed': '#26fedc', 'surface-container-highest': '#33353a', 'inverse-surface': '#e2e2e9', 'matrix-success': '#00E676', 'primary-fixed': '#dae1ff', 'secondary-container': '#4c19cd', 'secondary-fixed-dim': '#cbbeff', 'inverse-primary': '#0054d6', 'border-subtle': '#21262D', 'surface-container-low': '#1a1b21', 'on-secondary': '#320099', 'outline': '#8c90a1', 'secondary-fixed': '#e6deff', 'background': '#111318', 'primary-container': '#0066ff' }, borderRadius: { 'DEFAULT': '0.125rem', 'lg': '0.25rem', 'xl': '0.5rem', 'full': '0.75rem' }, spacing: { 'space-xl': '2.5rem', 'space-md': '1rem', 'gutter': '1.5rem', 'margin': '2rem', 'space-sm': '0.5rem', 'space-lg': '1.5rem', 'space-xs': '0.25rem' }, fontFamily: { 'headline-sm': ['Space Grotesk'], 'body-md': ['Hanken Grotesk'], 'label-lg': ['JetBrains Mono'], 'headline-lg-mobile': ['Space Grotesk'], 'body-lg': ['Hanken Grotesk'], 'headline-xl': ['Space Grotesk'], 'body-sm': ['Hanken Grotesk'], 'headline-lg': ['Space Grotesk'], 'headline-xl-mobile': ['Space Grotesk'], 'headline-md': ['Space Grotesk'], 'label-md': ['JetBrains Mono'], 'label-sm': ['JetBrains Mono'] }, fontSize: { 'headline-sm': ['20px', { lineHeight: '28px', fontWeight: '600' }], 'body-md': ['15px', { lineHeight: '24px', fontWeight: '400' }], 'label-lg': ['14px', { lineHeight: '20px', fontWeight: '500' }], 'headline-lg-mobile': ['28px', { lineHeight: '36px', fontWeight: '600' }], 'body-lg': ['18px', { lineHeight: '28px', fontWeight: '400' }], 'headline-xl': ['56px', { lineHeight: '64px', fontWeight: '700' }], 'body-sm': ['13px', { lineHeight: '20px', fontWeight: '400' }], 'headline-lg': ['40px', { lineHeight: '48px', fontWeight: '700' }], 'headline-xl-mobile': ['36px', { lineHeight: '44px', fontWeight: '700' }], 'headline-md': ['28px', { lineHeight: '36px', fontWeight: '600' }], 'label-md': ['12px', { lineHeight: '16px', fontWeight: '500' }], 'label-sm': ['10px', { lineHeight: '14px', fontWeight: '500' }] } } } };</script><style>@layer base{html,body{width:100vw;margin:0;padding:0;}body{overscroll-behavior-y:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-background font-body-md text-body-md text-on-surface flex flex-col min-h-screen selection:bg-primary-container selection:text-on-primary-container"><header class="fixed top-0 inset-x-0 z-50 bg-surface-dark/85 backdrop-blur-xl pt-safe shadow-[0_4px_20px_rgba(0,0,0,0.35)]"><div class="h-16 px-space-md flex items-center justify-between gap-space-sm"><div class="flex items-center gap-space-sm min-w-0"><button aria-label="Go Back" class="w-11 h-11 flex items-center justify-center rounded-xl bg-surface-elevated/70 text-on-surface hover:text-viewport-cyan transition-colors shrink-0" onclick="history.back()"><span class="material-symbols-outlined text-[20px]">arrow_back_ios_new</span></button><img alt="Manycore Hackathon Logo" class="h-7 w-auto object-contain shrink-0" src="assets/hosted-622882c9e1bd6021.img"/><div class="flex flex-col min-w-0"><h1 class="font-headline-sm text-headline-sm text-on-surface tracking-tight truncate">Project Details</h1></div></div><div class="flex items-center gap-space-sm shrink-0"><span class="hidden sm:inline-flex items-center gap-1 px-space-xs py-0.5 rounded bg-primary-container/20 text-viewport-cyan font-label-sm text-label-sm tracking-wide"><span class="w-1.5 h-1.5 rounded-full bg-matrix-success animate-pulse"></span>LIVE</span><div class="relative p-0.5 rounded-full bg-surface-container-high"><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="assets/hosted-d2632b5835e1cc98.img"/></div></div></div></header><main class="flex flex-col relative w-full pt-16 bg-surface min-h-screen pb-safe"><div class="flex flex-col w-full pb-32">
+<!-- Top Meta Breadcrumb & Live Pitch Status -->
+<div class="px-space-md pt-space-md pb-space-sm flex items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-xs">
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high text-tertiary-fixed-dim font-label-sm text-label-sm tracking-widest uppercase">TRACK #02</span>
+<span class="px-2 py-0.5 rounded-full bg-secondary-container/40 text-core-violet-light font-label-sm text-label-sm uppercase">AI &amp; GRAPHICS</span>
+</div>
+<div class="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-matrix-success animate-ping"></span>
+<span class="text-on-surface">答辩进行中</span>
+<span class="text-text-muted">| 序号 07</span>
+</div>
+</div>
+<!-- Project Title & Quick Stats -->
+<div class="px-space-md pb-space-md">
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface tracking-tight font-bold mb-space-xs">
+      SpatialGen 3D
+    </h1>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed mb-space-sm">
+      基于多模态大模型的室内 3D 空间全自动逆向生成与智能布局编排系统
+    </p>
+<!-- Micro Stat Badges -->
+<div class="flex items-center gap-space-sm overflow-x-auto pb-1">
+<div class="flex items-center gap-1 px-2.5 py-1 rounded bg-surface-elevated text-on-surface text-label-sm font-label-sm shrink-0">
+<span class="material-symbols-outlined text-viewport-cyan text-[14px]">bolt</span>
+<span>端到端重构 1.4s</span>
+</div>
+<div class="flex items-center gap-1 px-2.5 py-1 rounded bg-surface-elevated text-on-surface text-label-sm font-label-sm shrink-0">
+<span class="material-symbols-outlined text-tertiary text-[14px]">view_in_ar</span>
+<span>WebGPU 实时光追</span>
+</div>
+<div class="flex items-center gap-1 px-2.5 py-1 rounded bg-surface-elevated text-on-surface text-label-sm font-label-sm shrink-0">
+<span class="material-symbols-outlined text-signal-warning text-[14px]">star</span>
+<span>热度 1,482</span>
+</div>
+</div>
+</div>
+<!-- Video Player Preview Container -->
+<div class="px-space-md mb-space-lg">
+<div class="relative w-full aspect-video rounded-xl bg-surface-container-lowest overflow-hidden shadow-2xl group select-none" id="videoContainer">
+<!-- Background Video Thumbnail Mockup -->
+<img class="w-full h-full object-cover" data-alt="Futuristic CAD spatial interface showing a 3D isometric room reconstruction being generated by glowing wireframe neural rays, cyberpunk teal and violet ambient lighting, professional cinematic viewport with coordinate axes and depth pass overlay in dark mode." src="assets/hosted-2cc2e002f4179153.img"/>
+<!-- Ambient Glow Filter Overlay -->
+<div class="absolute inset-0 bg-gradient-to-t from-surface-dark via-surface-dark/40 to-transparent pointer-events-none"></div>
+<!-- Top Overlay Tags -->
+<div class="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-surface-dark/90 backdrop-blur-md text-viewport-cyan font-label-sm text-label-sm">
+<span class="w-2 h-2 rounded-full bg-matrix-success"></span>
+          DEMO 视频演示 · 1080P
+        </span>
+<span class="px-2 py-0.5 rounded bg-surface-container-high/80 backdrop-blur-md text-on-surface-variant font-label-sm text-label-sm">
+          HDR 60FPS
+        </span>
+</div>
+<!-- Center Play Button Overlay -->
+<div class="absolute inset-0 flex items-center justify-center cursor-pointer transition-transform active:scale-95" id="centerPlayButton">
+<div class="w-14 h-14 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center shadow-lg shadow-primary-container/40">
+<span class="material-symbols-outlined text-[32px] ml-1">play_arrow</span>
+</div>
+</div>
+<!-- Bottom Player Controls -->
+<div class="absolute bottom-0 inset-x-0 p-3 flex flex-col gap-1.5 bg-gradient-to-t from-surface-dark via-surface-dark/90 to-transparent">
+<!-- Interactive Progress Bar -->
+<div class="relative w-full h-1.5 bg-surface-container-high rounded-full overflow-hidden cursor-pointer">
+<div class="absolute left-0 top-0 bottom-0 w-[42%] bg-gradient-to-r from-primary-container to-viewport-cyan rounded-full" id="videoProgressBar"></div>
+</div>
+<!-- Control Icons & Timestamps -->
+<div class="flex items-center justify-between pt-0.5">
+<div class="flex items-center gap-2">
+<button aria-label="Play or Pause" class="w-7 h-7 flex items-center justify-center rounded text-on-surface hover:text-viewport-cyan transition-colors" id="togglePlayBtn">
+<span class="material-symbols-outlined text-[20px]" id="playIconSpan">play_arrow</span>
+</button>
+<button aria-label="Volume" class="w-7 h-7 flex items-center justify-center rounded text-on-surface hover:text-viewport-cyan transition-colors">
+<span class="material-symbols-outlined text-[18px]">volume_up</span>
+</button>
+<span class="font-label-sm text-label-sm text-on-surface-variant ml-1">
+<span class="text-on-surface" id="currentVideoTime">01:34</span> / 03:45
+            </span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="px-1.5 py-0.5 rounded bg-surface-container-high text-core-violet-light font-label-sm text-label-sm">2.0X</span>
+<button aria-label="Fullscreen" class="w-7 h-7 flex items-center justify-center rounded text-on-surface hover:text-viewport-cyan transition-colors">
+<span class="material-symbols-outlined text-[20px]">fullscreen</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Team Identity Card -->
+<div class="px-space-md mb-space-lg">
+<div class="bg-surface-elevated rounded-xl p-space-md shadow-md flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-core-violet-light">
+<span class="material-symbols-outlined text-[22px]">auto_fix_high</span>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h2 class="font-headline-sm text-headline-sm text-on-surface">空间魔法师团队</h2>
+<span class="px-1.5 py-0.2 rounded bg-tertiary-container/30 text-tertiary-fixed-dim font-label-sm text-label-sm">认证极客</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1 mt-0.5">
+<span class="material-symbols-outlined text-[14px]">pin_drop</span>
+              杭州 · 空间计算创新实验室 (Spatial Computing Lab)
+            </p>
+</div>
+</div>
+</div>
+<!-- Member Avatars and Badges -->
+<div class="pt-space-xs flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="flex -space-x-2 overflow-hidden">
+<div class="inline-block h-7 w-7 rounded-full bg-surface-container-highest flex items-center justify-center text-primary font-label-sm text-label-sm font-bold shadow-inner">
+              AL
+            </div>
+<div class="inline-block h-7 w-7 rounded-full bg-secondary-container flex items-center justify-center text-core-violet-light font-label-sm text-label-sm font-bold shadow-inner">
+              LN
+            </div>
+<div class="inline-block h-7 w-7 rounded-full bg-tertiary-container flex items-center justify-center text-on-tertiary-container font-label-sm text-label-sm font-bold shadow-inner">
+              CH
+            </div>
+</div>
+<span class="font-body-sm text-body-sm text-text-muted">Alex (算法架构), Lin (渲染引擎), Chen (产品交互)</span>
+</div>
+<button class="flex items-center gap-1 text-viewport-cyan font-label-sm text-label-sm py-1 px-2 rounded hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-[16px]">mail</span>
+<span>联络团队</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Deliverables Section (核心交付材料) -->
+<div class="px-space-md mb-space-lg">
+<div class="flex items-center justify-between mb-space-sm">
+<h2 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary-container text-[22px]">inventory_2</span>
+        核心交付物与代码
+      </h2>
+<span class="font-label-sm text-label-sm text-matrix-success flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">verified</span> 全部已校验
+      </span>
+</div>
+<div class="flex flex-col gap-3">
+<!-- 1. Open Source Repository Card -->
+<div class="bg-surface-elevated rounded-xl p-space-md shadow-sm flex flex-col gap-2.5 transition-all active:scale-[0.99]">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2.5">
+<div class="w-9 h-9 rounded-lg bg-surface-container-high flex items-center justify-center text-on-surface">
+<!-- Monochromatic GitHub SVG glyph -->
+<svg class="w-5 h-5 fill-current" viewbox="0 0 24 24">
+<path clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" fill-rule="evenodd"></path>
+</svg>
+</div>
+<div>
+<div class="flex items-center gap-1.5">
+<span class="font-headline-sm text-[16px] text-on-surface">SpatialGen-Engine</span>
+<span class="px-1 py-0.5 rounded bg-surface-container text-text-muted font-label-sm text-label-sm">Public</span>
+</div>
+<p class="font-label-sm text-label-sm text-text-muted mt-0.5">
+                38 commits · Python / Rust / WebGPU
+              </p>
+</div>
+</div>
+<span class="material-symbols-outlined text-text-muted text-[18px]">open_in_new</span>
+</div>
+<div class="flex items-center justify-between pt-1">
+<span class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-viewport-cyan"></span>
+            最后更新于 22 分钟前 (Final Push)
+          </span>
+<button class="px-3 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-container text-viewport-cyan font-label-sm text-label-sm font-medium transition-colors">
+            点击跳转开源仓库
+          </button>
+</div>
+</div>
+<!-- 2. Presentation Deck (PPT/PDF) -->
+<div class="bg-surface-elevated rounded-xl p-space-md shadow-sm flex flex-col gap-2.5">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2.5">
+<div class="w-9 h-9 rounded-lg bg-error-container/40 flex items-center justify-center text-error">
+<span class="material-symbols-outlined text-[20px]">picture_as_pdf</span>
+</div>
+<div>
+<span class="font-headline-sm text-[16px] text-on-surface">SpatialGen_Hackathon_Final.pdf</span>
+<p class="font-label-sm text-label-sm text-text-muted mt-0.5">
+                16 页高清幻灯片 · 28.4 MB · 包含系统架构图解
+              </p>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-2 pt-1">
+<button class="flex items-center justify-center gap-1.5 py-2 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-primary font-label-sm text-label-sm font-medium transition-colors" id="previewPdfBtn">
+<span class="material-symbols-outlined text-[16px]">visibility</span>
+            在线预览 PPT
+          </button>
+<button class="flex items-center justify-center gap-1.5 py-2 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-label-sm text-label-sm font-medium transition-colors" id="downloadPdfBtn">
+<span class="material-symbols-outlined text-[16px]">download</span>
+            下载文档 (PDF)
+          </button>
+</div>
+</div>
+<!-- 3. Live Interactive Demo Link -->
+<div class="bg-gradient-to-r from-surface-elevated via-surface-elevated to-primary-container/10 rounded-xl p-space-md shadow-sm flex items-center justify-between gap-2">
+<div class="flex items-center gap-2.5 min-w-0">
+<div class="w-9 h-9 rounded-lg bg-primary-container/30 flex items-center justify-center text-viewport-cyan shrink-0">
+<span class="material-symbols-outlined text-[20px]">rocket_launch</span>
+</div>
+<div class="min-w-0">
+<div class="flex items-center gap-1.5">
+<span class="font-headline-sm text-[15px] text-on-surface truncate">在线交互体验环境</span>
+<span class="px-1.5 py-0.5 rounded bg-matrix-success/20 text-matrix-success font-label-sm text-label-sm">LIVE</span>
+</div>
+<p class="font-label-sm text-label-sm text-text-muted truncate mt-0.5">
+              https://spatialgen.manycore.demo
+            </p>
+</div>
+</div>
+<button class="px-3.5 py-2 rounded-lg bg-primary-container hover:bg-inverse-primary text-on-primary-container font-label-sm text-label-sm font-semibold shrink-0 shadow-md transition-all active:scale-95 flex items-center gap-1">
+<span>直接体验</span>
+<span class="material-symbols-outlined text-[14px]">arrow_outward</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Project Introduction Tabs & Technical Insights -->
+<div class="px-space-md flex flex-col gap-space-md mb-space-lg">
+<div class="flex items-center gap-2 p-1 rounded-xl bg-surface-container-low">
+<button class="flex-1 py-1.5 rounded-lg text-center font-label-sm text-label-sm font-semibold transition-all bg-surface-container-high text-on-surface shadow-sm" id="tabTechBtn">
+        技术路线与架构
+      </button>
+<button class="flex-1 py-1.5 rounded-lg text-center font-label-sm text-label-sm font-semibold transition-all text-on-surface-variant hover:text-on-surface" id="tabValueBtn">
+        创新点与群核协同
+      </button>
+</div>
+<!-- Tab Pane 1: Technical Roadmap -->
+<div class="flex flex-col gap-3" id="techContentPane">
+<div class="bg-surface-elevated rounded-xl p-space-md shadow-sm">
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-2 flex items-center gap-2">
+<span class="material-symbols-outlined text-viewport-cyan text-[18px]">schema</span>
+          端到端多模态推理管线
+        </h3>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed mb-3">
+          该系统克服了单目 RGB 室内照片向高保真 3D 场景重建时的深度退化与形变问题。底层结合了多模态扩散注意力机制与几何拓扑先验模型。
+        </p>
+<!-- Technical Pipeline Flow Mini-Viz -->
+<div class="grid grid-cols-3 gap-2 py-2">
+<div class="p-2.5 rounded-lg bg-surface-container text-center flex flex-col items-center">
+<span class="material-symbols-outlined text-primary text-[20px] mb-1">crop_original</span>
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">Stage 1</span>
+<span class="font-body-sm text-body-sm text-text-muted scale-90">点云平面逆析</span>
+</div>
+<div class="p-2.5 rounded-lg bg-surface-container text-center flex flex-col items-center">
+<span class="material-symbols-outlined text-core-violet-light text-[20px] mb-1">psychology</span>
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">Stage 2</span>
+<span class="font-body-sm text-body-sm text-text-muted scale-90">软装语义扩散</span>
+</div>
+<div class="p-2.5 rounded-lg bg-surface-container text-center flex flex-col items-center">
+<span class="material-symbols-outlined text-tertiary-fixed-dim text-[20px] mb-1">view_in_ar</span>
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">Stage 3</span>
+<span class="font-body-sm text-body-sm text-text-muted scale-90">WebGPU 参数化</span>
+</div>
+</div>
+</div>
+<div class="bg-surface-elevated rounded-xl p-space-md shadow-sm">
+<h4 class="font-headline-sm text-[16px] text-on-surface mb-1.5 flex items-center gap-1.5">
+<span class="material-symbols-outlined text-core-violet-light text-[18px]">speed</span>
+          核心技术性能指标 (Benchmark)
+        </h4>
+<div class="space-y-2.5 mt-3">
+<div>
+<div class="flex justify-between text-label-sm font-label-sm mb-1">
+<span class="text-on-surface">3D 模型顶点重合精细度 (Chamfer Distance)</span>
+<span class="text-matrix-success">0.018mm (Top 1)</span>
+</div>
+<div class="w-full h-2 rounded-full bg-surface-container overflow-hidden">
+<div class="h-full bg-matrix-success rounded-full w-[94%]"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between text-label-sm font-label-sm mb-1">
+<span class="text-on-surface">实时光线追踪帧率 (移动端 Web 端)</span>
+<span class="text-viewport-cyan">58.4 FPS</span>
+</div>
+<div class="w-full h-2 rounded-full bg-surface-container overflow-hidden">
+<div class="h-full bg-viewport-cyan rounded-full w-[88%]"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Tab Pane 2: Innovation & Business Ecosystem Alignment (Hidden by default, toggleable) -->
+<div class="hidden flex flex-col gap-3" id="valueContentPane">
+<div class="bg-surface-elevated rounded-xl p-space-md shadow-sm">
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-2 flex items-center gap-2">
+<span class="material-symbols-outlined text-signal-warning text-[18px]">handshake</span>
+          与群核 (ManyCore) 空间生态深度赋能
+        </h3>
+<ul class="space-y-2.5 font-body-md text-body-md text-on-surface-variant">
+<li class="flex items-start gap-2">
+<span class="material-symbols-outlined text-matrix-success text-[18px] shrink-0 mt-0.5">check_circle</span>
+<span><strong>无缝兼容酷家乐模型资产库:</strong> 自动将生成式网格对齐到群核标准材质参数与 PBR 工作流，实现 100% 工业级复用。</span>
+</li>
+<li class="flex items-start gap-2">
+<span class="material-symbols-outlined text-matrix-success text-[18px] shrink-0 mt-0.5">check_circle</span>
+<span><strong>极速降低设计出图门槛:</strong> 用户仅需上传实景照或手绘草图，即可在 3 秒内直接导入群核云渲染编辑器，设计师效率倍增 12 倍。</span>
+</li>
+<li class="flex items-start gap-2">
+<span class="material-symbols-outlined text-matrix-success text-[18px] shrink-0 mt-0.5">check_circle</span>
+<span><strong>空间具身智能数据生成器:</strong> 为后续空间具身 AI 模型提供无上限、具备真实物理碰撞体积的合成训练场景。</span>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<!-- Interactive Modal Mockup for PPT Preview (Initially hidden) -->
+<div class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-surface-container-lowest/80 backdrop-blur-md" id="pdfModal">
+<div class="bg-surface-elevated rounded-2xl w-full max-w-sm p-5 shadow-2xl flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<span class="font-headline-sm text-[16px] text-on-surface">SpatialGen_Final.pdf 预览</span>
+<button class="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface" id="closePdfModal">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+<div class="w-full aspect-[4/3] rounded-xl bg-surface-container-high flex flex-col items-center justify-center text-center p-4">
+<span class="material-symbols-outlined text-viewport-cyan text-[48px] mb-2 animate-bounce">auto_stories</span>
+<p class="font-label-sm text-label-sm text-on-surface">在线文档交互查看器已就绪</p>
+<p class="font-body-sm text-body-sm text-text-muted mt-1">16页幻灯片已完全加载并完成防截屏水印注入</p>
+</div>
+<button class="w-full py-2.5 rounded-lg bg-primary-container text-on-primary-container font-headline-sm text-[14px]" id="confirmPdfAction">
+        进入全屏阅读模式
+      </button>
+</div>
+</div>
+<!-- Sticky Bottom Voting Bar -->
+<div class="fixed bottom-0 inset-x-0 z-40 bg-surface-dark/95 backdrop-blur-xl px-space-md py-3 shadow-[0_-8px_24px_rgba(0,0,0,0.6)]">
+<div class="flex flex-col gap-2.5">
+<!-- Status Notice Bar -->
+<div class="flex items-center justify-between font-label-sm text-label-sm">
+<div class="flex items-center gap-1.5 text-matrix-success">
+<span class="material-symbols-outlined text-[16px]">check_box</span>
+<span>已选为您的第 1 票 (可随时撤销调整)</span>
+</div>
+<span class="text-text-muted">当前已选 <strong class="text-on-surface" id="voteCountBadge">1</strong>/3 票</span>
+</div>
+<!-- Action Buttons Row -->
+<div class="flex items-center gap-2.5">
+<!-- Undo Button -->
+<button class="px-3.5 py-2.5 rounded-lg bg-surface-container-high hover:bg-surface-variant text-error font-headline-sm text-[14px] flex items-center gap-1 transition-all active:scale-95 shrink-0" id="btnRevokeVote">
+<span class="material-symbols-outlined text-[16px]">remove_circle_outline</span>
+<span id="revokeText">撤回投票</span>
+</button>
+<!-- Submit & Manage Vote Roster Button -->
+<button class="flex-1 py-2.5 rounded-lg bg-primary-container hover:bg-inverse-primary text-on-primary-container font-headline-sm text-[15px] font-semibold flex items-center justify-center gap-2 shadow-lg shadow-primary-container/20 transition-all active:scale-95" id="btnSubmitVotes">
+<span class="material-symbols-outlined text-[18px]">how_to_vote</span>
+<span>前往提交投票清单 (1/3)</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<script>
+  // Tab Switching Logic
+  const tabTechBtn = document.getElementById('tabTechBtn');
+  const tabValueBtn = document.getElementById('tabValueBtn');
+  const techPane = document.getElementById('techContentPane');
+  const valuePane = document.getElementById('valueContentPane');
+
+  tabTechBtn.addEventListener('click', () => {
+    tabTechBtn.className = 'flex-1 py-1.5 rounded-lg text-center font-label-sm text-label-sm font-semibold transition-all bg-surface-container-high text-on-surface shadow-sm';
+    tabValueBtn.className = 'flex-1 py-1.5 rounded-lg text-center font-label-sm text-label-sm font-semibold transition-all text-on-surface-variant hover:text-on-surface';
+    techPane.classList.remove('hidden');
+    valuePane.classList.add('hidden');
+  });
+
+  tabValueBtn.addEventListener('click', () => {
+    tabValueBtn.className = 'flex-1 py-1.5 rounded-lg text-center font-label-sm text-label-sm font-semibold transition-all bg-surface-container-high text-on-surface shadow-sm';
+    tabTechBtn.className = 'flex-1 py-1.5 rounded-lg text-center font-label-sm text-label-sm font-semibold transition-all text-on-surface-variant hover:text-on-surface';
+    valuePane.classList.remove('hidden');
+    techPane.classList.add('hidden');
+  });
+
+  // Video Preview Play / Pause Micro Interaction
+  let isPlaying = false;
+  const togglePlayBtn = document.getElementById('togglePlayBtn');
+  const centerPlayButton = document.getElementById('centerPlayButton');
+  const playIconSpan = document.getElementById('playIconSpan');
+  const progressBar = document.getElementById('videoProgressBar');
+  const currentTimeEl = document.getElementById('currentVideoTime');
+
+  function toggleVideoState() {
+    isPlaying = !isPlaying;
+    if (isPlaying) {
+      playIconSpan.textContent = 'pause';
+      centerPlayButton.classList.add('opacity-0', 'pointer-events-none');
+      progressBar.style.width = '68%';
+      currentTimeEl.textContent = '02:35';
+    } else {
+      playIconSpan.textContent = 'play_arrow';
+      centerPlayButton.classList.remove('opacity-0', 'pointer-events-none');
+      progressBar.style.width = '42%';
+      currentTimeEl.textContent = '01:34';
+    }
+  }
+
+  togglePlayBtn.addEventListener('click', toggleVideoState);
+  centerPlayButton.addEventListener('click', toggleVideoState);
+
+  // PDF Preview Modal
+  const previewPdfBtn = document.getElementById('previewPdfBtn');
+  const pdfModal = document.getElementById('pdfModal');
+  const closePdfModal = document.getElementById('closePdfModal');
+  const confirmPdfAction = document.getElementById('confirmPdfAction');
+
+  previewPdfBtn.addEventListener('click', () => {
+    pdfModal.classList.remove('hidden');
+  });
+
+  closePdfModal.addEventListener('click', () => {
+    pdfModal.classList.add('hidden');
+  });
+
+  confirmPdfAction.addEventListener('click', () => {
+    pdfModal.classList.add('hidden');
+  });
+
+  // Sticky Bottom Vote Toggle
+  let hasVoted = true;
+  const btnRevoke = document.getElementById('btnRevokeVote');
+  const revokeText = document.getElementById('revokeText');
+  const voteBadge = document.getElementById('voteCountBadge');
+  const btnSubmit = document.getElementById('btnSubmitVotes');
+
+  btnRevoke.addEventListener('click', () => {
+    hasVoted = !hasVoted;
+    if (!hasVoted) {
+      revokeText.textContent = '重新加入投票';
+      btnRevoke.classList.remove('text-error');
+      btnRevoke.classList.add('text-viewport-cyan');
+      voteBadge.textContent = '0';
+      btnSubmit.innerHTML = `<span class="material-symbols-outlined text-[18px]">how_to_vote</span><span>前往投票清单 (0/3)</span>`;
+    } else {
+      revokeText.textContent = '撤回投票';
+      btnRevoke.classList.remove('text-viewport-cyan');
+      btnRevoke.classList.add('text-error');
+      voteBadge.textContent = '1';
+      btnSubmit.innerHTML = `<span class="material-symbols-outlined text-[18px]">how_to_vote</span><span>前往提交投票清单 (1/3)</span>`;
+    }
+  });
+</script></main></body></html>
