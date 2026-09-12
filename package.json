@@ -1,0 +1,21 @@
+{
+  "name": "manycore-hackathon-voting-hub",
+  "private": true,
+  "version": "2.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && cp docs/index.html docs/404.html",
+    "preview": "vite preview",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "2.116.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "6.1.1",
+    "vite": "8.3.0"
+  }
+}
