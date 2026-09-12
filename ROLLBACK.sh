@@ -1,5 +1,5 @@
 #!/bin/sh
 set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-git -C "$ROOT" revert --no-edit HEAD
-printf 'PASS restored_behavior=previous-GitHub-Pages-commit\n'
+cp "$ROOT/index.original.html" "$ROOT/index.html"
+printf 'PASS restored_field=index.html restored_behavior=original-Stitch-title-and-metadata\n'

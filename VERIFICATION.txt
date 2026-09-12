@@ -30,3 +30,19 @@ literal output/result: /screens/project-details/ HTTP=200 bytes=31664
 literal output/result: PASS local_site routes=5 voting_interaction=present final_submit=present
 exit status: 0
 observable interaction: selecting RenderMesh Turbo and Coohom Copilot changed the count from 1/3 to 3/3 and enabled the final-submit confirmation modal.
+
+LIVE DEPLOYMENT
+command: GitHub Pages status plus curl -L live URL validation
+input: https://xing0325.github.io/manycore-hackathon-voting-hub/
+literal output/result: pages_status=building, then pages_status=built
+literal output/result: HTTP=200 <title>ManyCore Hackathon · Interactive Voting
+literal output/result: PASS live_url=https://xing0325.github.io/manycore-hackathon-voting-hub/ interactive_voting=present https_enforced=true
+exit status: 0
+
+ROLLBACK
+command: work/github-pages-rollback-field-1789216149/ROLLBACK.sh && cmp -s work/github-pages-rollback-field-1789216149/index.html work/github-pages-rollback-field-1789216149/index.original.html
+input: /Users/chichu/ai/codex-projects/群核/上传作品+投票网站/work/github-pages-rollback-field-1789216149
+literal output/result: PASS restored_field=index.html restored_behavior=original-Stitch-title-and-metadata
+literal output/result: PASS rollback_copy=work/github-pages-rollback-field-1789216149 restored_match=true
+exit status: 0
+restored behavior/status: index.html byte-matches index.original.html and displays the original Stitch title/metadata; the deployed MODIFIED_FILE remains changed on main.
