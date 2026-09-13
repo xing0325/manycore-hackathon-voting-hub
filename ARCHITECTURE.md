@@ -8,7 +8,7 @@
 - 线上地址：https://xing0325.github.io/manycore-hackathon-voting-hub/
 - Supabase 项目：`hkzxqhdopxfrbtmogdiz`（ap-northeast-1）
 - 当前功能部署提交：`76aa43ddf021ab0fbea9112ee2b21c60610f6c9f`（GitHub Pages 已构建）
-- 最新项目记录提交：`53f3b9ccc2ef918033949bd4c6864873f69e4e9b`
+- 项目记录：已同步到 GitHub `main` 分支
 
 ## 已完成
 
