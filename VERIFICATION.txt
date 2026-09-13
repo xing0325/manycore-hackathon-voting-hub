@@ -72,7 +72,7 @@ restored behavior/status: backend REST/Auth/participants paths respond normally;
 HANDOFF PACKAGE
 command: npm test && npm run verify:backend && npm run build; zip archive creation; unzip -t
 input: /Users/chichu/ai/codex-projects/群核/上传作品+投票网站/github-pages
-literal output/result: PASS tests=3/3; backend projects=HTTP 200 rows=4; votes=HTTP 200 rows=0; participants=HTTP 200 rows=0; leaderboard RPC=HTTP 200 rows=4; build=PASS; archive=/Users/chichu/ai/codex-projects/群核/上传作品+投票网站/outputs/manycore-hackathon-voting-hub-handoff.zip; archive_testzip=None; remote_commit=17c68a6e; Pages=built; live HTTP=200
+literal output/result: PASS tests=3/3; backend projects=HTTP 200 rows=4; votes=HTTP 200 rows=0; participants=HTTP 200 rows=0; leaderboard RPC=HTTP 200 rows=4; build=PASS; archive=/Users/chichu/ai/codex-projects/群核/上传作品+投票网站/outputs/manycore-hackathon-voting-hub-handoff.zip; archive_testzip=None; remote_commit=53f3b9cc; Pages=built; live HTTP=200
 exit status: 0
 restored behavior/status: another computer can clone the repository, copy `.env.example` to `.env.local`, run the verification commands, and start the same Supabase-backed app without this computer's local files.
 
