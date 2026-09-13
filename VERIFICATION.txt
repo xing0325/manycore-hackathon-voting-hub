@@ -1,6 +1,6 @@
 Project: ManyCore Hackathon Showcase & Voting Hub
 Changed branch: main
-Changed field: Supabase Auth changed from email Magic Link to unique real-name + password registration/login
+Changed field: passwordless real-name + team entry, one-project submission rules, and live dashboard data sync
 MODIFIED_FILE: /Users/chichu/ai/codex-projects/群核/上传作品+投票网站/github-pages/src/main.jsx
 DIFF_FILE: /Users/chichu/ai/codex-projects/群核/上传作品+投票网站/github-pages/DIFF.patch
 VERIFICATION_FILE: /Users/chichu/ai/codex-projects/群核/上传作品+投票网站/github-pages/VERIFICATION.txt
