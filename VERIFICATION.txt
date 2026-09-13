@@ -68,3 +68,10 @@ input: project ref=hkzxqhdopxfrbtmogdiz; temporary display_name=交接测试<tim
 literal output/result: projects HTTP=200 (4 published demo records); votes HTTP=200 ([]); participants HTTP=200 ([] before test); signup=true session=true; participant row created=1; temporary account signed out; live HTTP=200; live bundle contains Supabase URL and no password input marker
 exit status: 0
 restored behavior/status: backend REST/Auth/participants paths respond normally; temporary smoke-test account was signed out and no project/vote data was written; source and docs are clean.
+
+HANDOFF PACKAGE
+command: npm test && npm run verify:backend && npm run build; zip archive creation; unzip -t
+input: /Users/chichu/ai/codex-projects/群核/上传作品+投票网站/github-pages
+literal output/result: PASS tests=3/3; backend projects=HTTP 200 rows=4; votes=HTTP 200 rows=0; participants=HTTP 200 rows=0; leaderboard RPC=HTTP 200 rows=4; build=PASS; archive=/Users/chichu/ai/codex-projects/群核/上传作品+投票网站/outputs/manycore-hackathon-voting-hub-handoff.zip; archive_testzip=None; remote_commit=24548f97; Pages=built; live HTTP=200
+exit status: 0
+restored behavior/status: another computer can clone the repository, copy `.env.example` to `.env.local`, run the verification commands, and start the same Supabase-backed app without this computer's local files.
