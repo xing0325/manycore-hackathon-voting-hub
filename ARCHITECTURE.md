@@ -27,8 +27,10 @@
 ## 云端迁移状态（2026-09-13）
 
 - 已验证 Supabase 云端核心表和函数：`projects`、`votes`、`participants`、`get_leaderboard()` 均返回 HTTP 200。
+- 已做真实写入回归：登录后上传 PDF 返回 HTTP 200，写入 `public.projects` 返回 HTTP 201，带登录令牌读回返回 HTTP 200；验证记录随后清理，公开列表仍为四张示例卡片。
 - `202609130002_demo_cards_and_submission_rules.sql` 尚未在云端执行；当前查询 `projects.is_demo` 返回 `42703 column does not exist`。现在线上前端会识别四张教学示例卡片，账号级唯一提交约束仍由已上线的 `owner_id` 唯一索引和前端校验工作。
 - `202609130003_dashboard_realtime.sql` 已随代码发布；云端 publication 需要在 Supabase SQL Editor 执行后才会推送数据库事件。即使未开启 publication，看板仍用 8 秒自动轮询保持更新。
+- 当前登录的 Supabase 账号在控制台看不到项目 `hkzxqhdopxfrbtmogdiz`；这只影响 SQL Editor 管理入口，不影响前端通过 publishable key 写入已验证的云端项目。
 
 ## 关键文件
 

@@ -100,3 +100,17 @@ input: repository snapshot including dashboard source, migration 202609130003, d
 literal output/result: archive_test=No errors detected in compressed data; contains_003=1; contains_dashboard_bundle=1
 exit status: 0
 restored behavior/status: live site remains deployed; persistent project record and handoff archive now include the dashboard status and latest deployment commit.
+
+SUBMISSION WRITE E2E (2026-09-13)
+command: authenticated sign-in -> project-assets upload -> public.projects insert -> authenticated readback -> project delete -> storage remove -> sign-out
+input: temporary account 云端验证77637452 / 验证组77637452; project ref=hkzxqhdopxfrbtmogdiz
+literal output/result: login=HTTP 200; storage_upload=HTTP 200; project_insert=HTTP 201; project_read=HTTP 200 rows=1 owner_matches=true; project_cleanup=HTTP 204; storage_cleanup=HTTP 200; session_cleanup=HTTP 204
+exit status: 0
+restored behavior/status: the test project and uploaded PDF were removed after readback; the temporary session was signed out; the public project list remains the four demo rows. The production form uses the same authenticated insert and Storage path.
+
+SUPABASE DASHBOARD ACCESS CHECK
+command: open https://supabase.com/dashboard/project/hkzxqhdopxfrbtmogdiz/sql/new while signed in
+input: currently signed-in Supabase account
+literal output/result: dashboard redirects to Organizations; target project is not listed in the account's organizations (console shows no access), while the project's public Data API continues to return HTTP 200.
+exit status: 0
+restored behavior/status: app data writes remain available through the publishable-key client; SQL migrations require a Supabase account that is a member of project hkzxqhdopxfrbtmogdiz.
