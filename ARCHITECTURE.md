@@ -7,7 +7,7 @@
 - 前端：Vite + React，GitHub Pages，`main` 分支 `/docs`
 - 线上地址：https://xing0325.github.io/manycore-hackathon-voting-hub/
 - Supabase 项目：`hkzxqhdopxfrbtmogdiz`（ap-northeast-1）
-- 当前部署提交：`24548f97`（GitHub Pages 已构建）
+- 当前部署提交：`5353f4f1`（GitHub Pages 已构建）
 
 ## 已完成
 
@@ -20,6 +20,7 @@
 - Supabase Storage：`project-assets`，封面和 PDF/PPT/PPTX
 - `submit_ballot(uuid[])`：登录后原子提交三个不同作品，重复提交拒绝
 - `get_leaderboard()`：公开读取已发布作品及票数
+- `#dashboard`：只读数据看板；Realtime 监听 `projects` / `votes`，每 8 秒轮询兜底，不需要手动刷新
 - 所有业务表和 Storage 均启用 RLS；security advisors 已通过
 
 ## 关键文件

@@ -289,6 +289,52 @@ function Leaderboard({ projects }) {
   )
 }
 
+function Dashboard({ projects, loading, lastSyncedAt, realtimeStatus, onNavigate }) {
+  const published = projects.filter((project) => !project.is_demo)
+  const totalVotes = published.reduce((sum, project) => sum + Number(project.vote_count || 0), 0)
+  const updatedProjects = [...published].sort((a, b) => {
+    const left = new Date(a.updated_at || a.created_at || 0).getTime()
+    const right = new Date(b.updated_at || b.created_at || 0).getTime()
+    return right - left
+  })
+  const formatTime = (value) => value ? new Intl.DateTimeFormat('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' }).format(new Date(value)) : '等待同步'
+  const statusLabel = realtimeStatus === 'LIVE' ? '实时连接中' : realtimeStatus === 'CONNECTING' ? '正在连接' : '自动轮询中'
+
+  return (
+    <section className="dashboard-page">
+      <div className="dashboard-heading">
+        <div>
+          <p className="eyebrow">LIVE OPERATIONS</p>
+          <h1>数据看板</h1>
+          <p>作品和票数会自动同步，不需要手动刷新页面。</p>
+        </div>
+        <div className="dashboard-actions">
+          <span className={realtimeStatus === 'LIVE' ? 'live-pill live' : 'live-pill'}><i />{statusLabel}</span>
+          <a className="ghost-link" href="https://supabase.com/dashboard/project/hkzxqhdopxfrbtmogdiz" target="_blank" rel="noreferrer">打开 Supabase 控制台 ↗</a>
+          <button className="ghost-link" onClick={() => onNavigate('submit')}>返回网站</button>
+        </div>
+      </div>
+
+      <div className="metrics-grid">
+        <article className="metric-card"><span>正式作品</span><strong>{loading ? '—' : published.length}</strong><small>不含教学示例</small></article>
+        <article className="metric-card"><span>累计选票</span><strong>{loading ? '—' : totalVotes}</strong><small>每位观众最多三票</small></article>
+        <article className="metric-card"><span>已投票观众</span><strong>{loading ? '—' : Math.floor(totalVotes / 3)}</strong><small>按三票制折算</small></article>
+        <article className="metric-card"><span>最近同步</span><strong className="metric-time">{formatTime(lastSyncedAt)}</strong><small>后台持续监听更新</small></article>
+      </div>
+
+      <div className="dashboard-table-wrap">
+        <div className="dashboard-table-head"><div><span className="eyebrow">SUBMISSIONS</span><h2>最新作品</h2></div><span className="table-note">每 8 秒自动校验一次</span></div>
+        {updatedProjects.length === 0 && !loading ? <div className="notice">还没有正式作品，参赛组提交后会自动出现在这里。</div> : (
+          <div className="dashboard-table">
+            <div className="dashboard-row dashboard-row-head"><span>作品</span><span>团队 / 赛道</span><span>票数</span><span>更新时间</span></div>
+            {updatedProjects.map((project) => <div className="dashboard-row" key={project.id}><span className="project-name-cell"><b>{project.name}</b><small>{project.tagline || '暂无一句话亮点'}</small></span><span><b>{project.team_name}</b><small>{project.track || '其他'}</small></span><strong className="votes-cell">{project.vote_count || 0}</strong><time>{formatTime(project.updated_at || project.created_at)}</time></div>)}
+          </div>
+        )}
+      </div>
+    </section>
+  )
+}
+
 function LoginGate({ onToast }) {
   return (
     <section className="login-page">
@@ -304,11 +350,14 @@ function LoginGate({ onToast }) {
 }
 
 function App() {
-  const [page, setPage] = useState('submit')
+  const initialPage = window.location.hash === '#dashboard' ? 'dashboard' : 'submit'
+  const [page, setPage] = useState(initialPage)
   const [session, setSession] = useState(null)
   const [projects, setProjects] = useState([])
   const [selected, setSelected] = useState([])
   const [loading, setLoading] = useState(true)
+  const [lastSyncedAt, setLastSyncedAt] = useState(null)
+  const [realtimeStatus, setRealtimeStatus] = useState('CONNECTING')
   const [modal, setModal] = useState(null)
   const [message, setMessage] = useState('')
 
@@ -322,17 +371,28 @@ function App() {
     if (!supabase) return
     const { data, error } = await supabase.rpc('get_leaderboard')
     if (error) toast(error.message)
-    else setProjects((data || []).map(decorateProject))
+    else { setProjects((data || []).map(decorateProject)); setLastSyncedAt(new Date().toISOString()) }
     setLoading(false)
   }, [toast])
+
+  const navigate = useCallback((nextPage) => {
+    setPage(nextPage)
+    if (nextPage === 'dashboard') window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}#dashboard`)
+    else window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}`)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [])
 
   useEffect(() => {
     if (!supabase) { setLoading(false); return }
     supabase.auth.getSession().then(({ data }) => setSession(data.session))
     const { data: listener } = supabase.auth.onAuthStateChange((_event, next) => setSession(next))
     loadProjects()
-    const timer = window.setInterval(loadProjects, 10000)
-    return () => { listener.subscription.unsubscribe(); window.clearInterval(timer) }
+    const channel = supabase.channel('manycore-dashboard-live')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'projects' }, loadProjects)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'votes' }, loadProjects)
+      .subscribe((status) => setRealtimeStatus(status === 'SUBSCRIBED' ? 'LIVE' : status === 'CHANNEL_ERROR' ? 'POLLING' : 'CONNECTING'))
+    const timer = window.setInterval(loadProjects, 8000)
+    return () => { listener.subscription.unsubscribe(); channel.unsubscribe(); window.clearInterval(timer) }
   }, [loadProjects])
 
   async function submitVotes() {
@@ -348,16 +408,17 @@ function App() {
   return (
     <div className="app-shell">
       {session && <header>
-        <button className="brand" onClick={() => setPage('gallery')}><img src={`${base}assets/hosted-622882c9e1bd6021.png`} alt="ManyCore" /><span>ManyCore<br /><small>HACKATHON HUB</small></span></button>
-        <AuthPanel session={session} onToast={toast} />
+        <button className="brand" onClick={() => navigate('gallery')}><img src={`${base}assets/hosted-622882c9e1bd6021.png`} alt="ManyCore" /><span>ManyCore<br /><small>HACKATHON HUB</small></span></button>
+        <div className="header-actions"><button className="header-link" onClick={() => navigate('dashboard')}>数据看板</button><AuthPanel session={session} onToast={toast} /></div>
       </header>}
       {!isConfigured && <div className="config-error">Supabase 环境变量尚未配置。</div>}
       <main>
-        {!session && <LoginGate onToast={toast} />}
+        {!session && page !== 'dashboard' && <LoginGate onToast={toast} />}
+        {page === 'dashboard' && <Dashboard {...{ projects, loading, lastSyncedAt, realtimeStatus, onNavigate: navigate }} />}
         {session && page === 'gallery' && <Gallery {...{ projects, session, selected, setSelected, submitVotes, loading, onOpen: setModal, onToast: toast }} />}
-        {session && page === 'submit' && <Submission session={session} onSubmitted={() => { loadProjects(); setPage('submit') }} onToast={toast} />}
+        {session && page === 'submit' && <Submission session={session} onSubmitted={() => { loadProjects(); navigate('submit') }} onToast={toast} />}
       </main>
-      {session && <nav>{[['submit', '＋', '提交作品'], ['gallery', '◇', '作品展厅']].map(([key, icon, label]) => <button className={page === key ? 'active' : ''} onClick={() => { setPage(key); window.scrollTo({ top: 0, behavior: 'smooth' }) }} key={key}><Icon>{icon}</Icon><span>{label}</span></button>)}</nav>}
+      {session && <nav>{[['submit', '＋', '提交作品'], ['gallery', '◇', '作品展厅']].map(([key, icon, label]) => <button className={page === key ? 'active' : ''} onClick={() => navigate(key)} key={key}><Icon>{icon}</Icon><span>{label}</span></button>)}</nav>}
       <ProjectModal project={modal} onClose={() => setModal(null)} />
       <Toast message={message} />
     </div>

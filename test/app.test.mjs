@@ -7,6 +7,7 @@ const migration1 = readFileSync('supabase/migrations/202609120001_hackathon_hub.
 const migration2 = readFileSync('supabase/migrations/202609120002_harden_ballots_and_leaderboard.sql', 'utf8')
 const migration3 = readFileSync('supabase/migrations/202609130001_name_password_accounts.sql', 'utf8')
 const migration4 = readFileSync('supabase/migrations/202609130002_demo_cards_and_submission_rules.sql', 'utf8')
+const migration5 = readFileSync('supabase/migrations/202609130003_dashboard_realtime.sql', 'utf8')
 
 test('React app connects passwordless name-team entry, voting, submission and storage', () => {
   assert.match(app, /signInWithPassword/)
@@ -15,6 +16,9 @@ test('React app connects passwordless name-team entry, voting, submission and st
   assert.match(app, /accountCredential/)
   assert.doesNotMatch(app, /type="password"/)
   assert.match(app, /placeholder="组名"/)
+  assert.match(app, /数据看板/)
+  assert.match(app, /manycore-dashboard-live/)
+  assert.match(app, /setInterval\(loadProjects, 8000\)/)
   assert.match(app, /rpc\('submit_ballot'/)
   assert.match(app, /rpc\('get_leaderboard'/)
   assert.match(app, /storage\.from\('project-assets'\)/)
@@ -30,6 +34,8 @@ test('database migrations enforce RLS and exactly three votes', () => {
   assert.match(migration3, /email_confirmed_at/)
   assert.match(migration4, /is_demo boolean not null default false/)
   assert.match(migration4, /not exists \(select 1 from public\.projects/)
+  assert.match(migration5, /alter publication supabase_realtime add table public\.projects/)
+  assert.match(migration5, /alter publication supabase_realtime add table public\.votes/)
 })
 
 test('GitHub Pages build is complete', () => {

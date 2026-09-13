@@ -12,6 +12,8 @@
 
 GitHub 仓库和演示视频只保存 URL，不上传视频文件。数据库与 Storage 均启用 RLS；每个本名只能注册一次，每个组只能提交一份正式作品，提交后只能编辑自己的作品。登录凭据由 Supabase 内部管理，页面不要求用户输入密码。展厅中的 4 张默认卡片是教学占位示例，不参与投票。
 
+数据看板：<https://xing0325.github.io/manycore-hackathon-voting-hub/#dashboard>。看板使用 `get_leaderboard()`，通过 Supabase Realtime 监听项目/投票变化，并保留 8 秒自动轮询兜底，因此打开后不需要手动刷新。
+
 ## 本地开发
 
 ```bash

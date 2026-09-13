@@ -31,6 +31,7 @@ npm run dev
 - `public.participants`：本名唯一的参赛账号映射。
 - `project-assets`：Supabase Storage 公共读取桶；封面和 PPT 上传到这里。
 - `get_leaderboard()`：展厅读取作品及票数。
+- 数据看板链接：<https://xing0325.github.io/manycore-hackathon-voting-hub/#dashboard>；页面通过 Supabase Realtime 监听项目/投票变化，并每 8 秒自动校验一次，不需要手动刷新。
 - Supabase Auth：页面只输入本名和组名，凭据由前端按规则生成并由 Supabase 保存；同一本名只能有一个账号。
 
 ## 修改和发布
@@ -59,6 +60,7 @@ GitHub Pages 会自动从 `main:/docs` 构建。不要把 `.env.local`、Supabas
 - `npm test`：3/3 通过。
 - `npm run build`：通过，输出到 `docs/`。
 - Supabase REST：`projects`、`votes`、`participants` 均可访问。
+- Dashboard：`get_leaderboard()` HTTP 200；Realtime 订阅 + 8 秒轮询兜底已接入。
 - Auth：临时账号注册并创建 participant 记录成功。
 - GitHub Pages：线上 HTTP 200，线上 bundle 已验证无密码输入字段。
 
