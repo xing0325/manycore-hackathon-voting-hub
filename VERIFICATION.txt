@@ -61,3 +61,10 @@ input: parent=060dffe24b67030068565857fc890f006685f0a5; local commit=93aefe29d0c
 literal output/result: commit=4f16577941332941a4deff6e4897b6ad0b60e2a4; ref=4f16577941332941a4deff6e4897b6ad0b60e2a4; Pages build=built; live HTTP=200; live bundle=password-field-absent; live copy=name+team
 exit status: 0
 restored behavior/status: password input remains absent; login card keeps aligned two-field row and full-width entry button; Supabase-backed name/team entry remains active.
+
+HANDOFF / BACKEND SMOKE TEST
+command: curl Supabase REST endpoints; temporary Auth signup; participant lookup; GitHub Pages bundle fetch
+input: project ref=hkzxqhdopxfrbtmogdiz; temporary display_name=交接测试<timestamp>; team_name=交接组
+literal output/result: projects HTTP=200 (4 published demo records); votes HTTP=200 ([]); participants HTTP=200 ([] before test); signup=true session=true; participant row created=1; temporary account signed out; live HTTP=200; live bundle contains Supabase URL and no password input marker
+exit status: 0
+restored behavior/status: backend REST/Auth/participants paths respond normally; temporary smoke-test account was signed out and no project/vote data was written; source and docs are clean.
