@@ -7,7 +7,7 @@
 - 前端：Vite + React，GitHub Pages，`main` 分支 `/docs`
 - 线上地址：https://xing0325.github.io/manycore-hackathon-voting-hub/
 - Supabase 项目：`hkzxqhdopxfrbtmogdiz`（ap-northeast-1）
-- 当前部署提交：`5353f4f1`（GitHub Pages 已构建）
+- 当前部署提交：`76aa43ddf021ab0fbea9112ee2b21c60610f6c9f`（GitHub Pages 已构建）
 
 ## 已完成
 
@@ -22,6 +22,12 @@
 - `get_leaderboard()`：公开读取已发布作品及票数
 - `#dashboard`：只读数据看板；Realtime 监听 `projects` / `votes`，每 8 秒轮询兜底，不需要手动刷新
 - 所有业务表和 Storage 均启用 RLS；security advisors 已通过
+
+## 云端迁移状态（2026-09-13）
+
+- 已验证 Supabase 云端核心表和函数：`projects`、`votes`、`participants`、`get_leaderboard()` 均返回 HTTP 200。
+- `202609130002_demo_cards_and_submission_rules.sql` 尚未在云端执行；当前查询 `projects.is_demo` 返回 `42703 column does not exist`。现在线上前端会识别四张教学示例卡片，账号级唯一提交约束仍由已上线的 `owner_id` 唯一索引和前端校验工作。
+- `202609130003_dashboard_realtime.sql` 已随代码发布；云端 publication 需要在 Supabase SQL Editor 执行后才会推送数据库事件。即使未开启 publication，看板仍用 8 秒自动轮询保持更新。
 
 ## 关键文件
 

@@ -75,3 +75,28 @@ input: /Users/chichu/ai/codex-projects/群核/上传作品+投票网站/github-p
 literal output/result: PASS tests=3/3; backend projects=HTTP 200 rows=4; votes=HTTP 200 rows=0; participants=HTTP 200 rows=0; leaderboard RPC=HTTP 200 rows=4; build=PASS; archive=/Users/chichu/ai/codex-projects/群核/上传作品+投票网站/outputs/manycore-hackathon-voting-hub-handoff.zip; archive_testzip=None; remote_commit=5353f4f1; Pages=built; live HTTP=200
 exit status: 0
 restored behavior/status: another computer can clone the repository, copy `.env.example` to `.env.local`, run the verification commands, and start the same Supabase-backed app without this computer's local files.
+
+CURRENT STATUS CHECK (2026-09-13)
+command: npm test && npm run verify:backend && npm run build
+input: /Users/chichu/ai/codex-projects/群核/上传作品+投票网站/github-pages
+literal output/result: tests=3/3 PASS; projects HTTP=200 rows=4; votes HTTP=200 rows=0; participants HTTP=200 rows=0; leaderboard RPC HTTP=200 rows=4; Vite build PASS
+exit status: 0
+
+CLOUD SCHEMA CHECK
+command: curl -H "apikey: $VITE_SUPABASE_PUBLISHABLE_KEY" "$VITE_SUPABASE_URL/rest/v1/projects?select=id,is_demo&limit=1"
+input: project ref=hkzxqhdopxfrbtmogdiz
+literal output/result: HTTP 400; code=42703; message=column projects.is_demo does not exist
+exit status: 0 (diagnostic check; migration 202609130002 is staged in the repository but not yet applied in the cloud project)
+
+LIVE DASHBOARD CHECK
+command: curl -L -o /tmp/manycore-live.html -w "%{http_code}" https://xing0325.github.io/manycore-hackathon-voting-hub/; curl -L https://xing0325.github.io/manycore-hackathon-voting-hub/assets/index-DqbhaMKa.js
+input: public GitHub Pages URL
+literal output/result: live HTML HTTP=200; bundle HTTP=200; markers LIVE OPERATIONS, 每 8 秒自动校验一次, manycore-dashboard-live present
+exit status: 0
+
+HANDOFF ARCHIVE REFRESH
+command: zip -qr /Users/chichu/ai/codex-projects/群核/上传作品+投票网站/outputs/manycore-hackathon-voting-hub-handoff.zip manycore-hackathon-voting-hub; unzip -t ...
+input: repository snapshot including dashboard source, migration 202609130003, docs, and built docs/
+literal output/result: archive_test=No errors detected in compressed data; contains_003=1; contains_dashboard_bundle=1
+exit status: 0
+restored behavior/status: live site remains deployed; persistent project record and handoff archive now include the dashboard status and latest deployment commit.
