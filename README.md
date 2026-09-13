@@ -20,4 +20,18 @@ npm install
 npm run dev
 ```
 
+## 换电脑快速接手
+
+```bash
+git clone https://github.com/xing0325/manycore-hackathon-voting-hub.git
+cd manycore-hackathon-voting-hub
+npm ci
+cp .env.example .env.local
+# 编辑 .env.local，填入 Supabase URL 与 publishable key
+npm test
+npm run dev
+```
+
+线上地址和数据库数据不依赖当前电脑：GitHub Pages 继续发布 `main:/docs`，Supabase 保存账号、作品、投票及 Storage 文件。管理密钥不放进代码仓库；新电脑登录 GitHub，并从 Supabase 项目设置取得 publishable key 即可运行。
+
 数据库结构位于 `supabase/migrations/`。生产构建输出到 `docs/`，供 GitHub Pages 发布。

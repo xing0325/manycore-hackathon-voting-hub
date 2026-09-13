@@ -7,7 +7,7 @@
 - 前端：Vite + React，GitHub Pages，`main` 分支 `/docs`
 - 线上地址：https://xing0325.github.io/manycore-hackathon-voting-hub/
 - Supabase 项目：`hkzxqhdopxfrbtmogdiz`（ap-northeast-1）
-- 当前部署提交：`4f165779`（GitHub Pages 已构建）
+- 当前部署提交：`06017442`（GitHub Pages 已构建）
 
 ## 已完成
 
@@ -28,6 +28,7 @@
 - `src/supabase.js`：客户端初始化
 - `supabase/migrations/`：按时间顺序的完整数据库变更
 - `.env.example`：本地环境变量模板（不提交真实密钥）
+- `.env.local`：本机本地开发配置（不提交；换电脑时按 `.env.example` 创建）
 - `README.md`：运行和部署说明
 - `VERIFICATION.txt`：每次变更的测试和回滚记录
 - `ROLLBACK.sh`：恢复脚本
@@ -44,6 +45,20 @@ git add . && git commit -m '描述变更' && git push origin main
 ```
 
 GitHub Pages 会从 `main:/docs` 自动发布。Supabase 迁移通过 Supabase MCP 的 `apply_migration` 按文件名执行；不要重排或删除已执行的迁移。
+
+## 换电脑接手
+
+```bash
+git clone https://github.com/xing0325/manycore-hackathon-voting-hub.git
+cd manycore-hackathon-voting-hub
+npm ci
+cp .env.example .env.local
+# 在 .env.local 填入 Supabase URL 和 publishable key
+npm test
+npm run dev
+```
+
+线上前端无需重新配置：GitHub Pages 已发布 `/docs`，Supabase 数据库和 Storage 保留线上数据。仓库只包含可公开的 publishable key 配置方式；Supabase service-role key、GitHub PAT 等管理凭据不写入仓库，需要在新电脑的密码管理器或对应平台登录后单独配置。
 
 ## 记录规则
 
